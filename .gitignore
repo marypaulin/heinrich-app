@@ -1,3 +1,5 @@
 RHI/
 templates/
+output/
 __pycache__/
+*.egg-info/
