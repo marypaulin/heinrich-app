@@ -1,0 +1,12 @@
+[project]
+name = "heinrich-metallbau"
+version = "0.1.0"
+description = "CLI utility to generate documents from CSV and Word template."
+authors = [
+  { name = "Marie Pauline Sauvant", email = "mp.sauvant@gmail.com" }
+]
+requires-python = ">=3.12.5"
+dependencies = [
+  "python-docx>=1.1.0",
+  "docx>=0.2.4"
+]
