@@ -3,3 +3,4 @@ templates/
 output/
 __pycache__/
 *.egg-info/
+.vscode
