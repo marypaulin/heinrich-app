@@ -28,7 +28,7 @@ def main():
         # TODO: Transform CSV data as needed for template
         docx_path = output_paths['docx']
         pdf_path = output_paths['pdf']
-        render_lieferschein(template_path, data, docx_path)
+        render_lieferschein(template_path, args.project_number, data, docx_path)
         render_pdf_stub(pdf_path)
     elif args.mode == 'rechnung':
         logging.info('Rechnung mode is scaffolded only. TODO: Implement ORDER_NUMBER logic and document generation.')
