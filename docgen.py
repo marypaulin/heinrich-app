@@ -7,24 +7,38 @@ from pathlib import Path
 from typing import Dict, List
 
 from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
+from docx.table import _Row
 
 
 def _replace_placeholders(doc: Document, mapping: Dict[str, str]) -> None:
     """Replace placeholders in all paragraphs of the document."""
     for paragraph in doc.paragraphs:
-        for placeholder, value in mapping.items():
-            if placeholder in paragraph.text:
-                paragraph.text = paragraph.text.replace(placeholder, value)
+        for run in paragraph.runs:
+            for placeholder, value in mapping.items():
+                if placeholder in run.text:
+                    run.text = run.text.replace(placeholder, value)
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
-                    for placeholder, value in mapping.items():
-                        if placeholder in paragraph.text:
-                            paragraph.text = paragraph.text.replace(placeholder, value)
+                    for run in paragraph.runs:
+                        for placeholder, value in mapping.items():
+                            if placeholder in run.text:
+                                run.text = run.text.replace(placeholder, value)
+
+
+def format_cell(cell, font_name="Calibri", font_size=10):
+    """Set font for all text in a table cell."""
+    for paragraph in cell.paragraphs:
+        for run in paragraph.runs:
+            run.font.name = font_name
+            run.font.size = Pt(font_size)
+
 
 def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
-    """Fill the second table in the document with data."""
+    """Fill the main table in the document with data."""
     # The table has 5 columns:
     # "Pos", "Menge", "Beschreibung", "€/Stk", "Preis gesamt"
     # The first row of the table is the header row with these titles
@@ -48,8 +62,64 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
     if not doc.tables:
         logging.warning("No tables found in the document to fill.")
         return
-    table = doc.tables[1]
-    # TODO: Fill table with data
+    for table in doc.tables:
+        if len(table.columns) == 5 and table.cell(0, 0).text == "Pos":
+            target_table = table
+            # Find where the summary rows start (last 3 rows)
+            FOOTER_ROWS = 3  # MwSt/Summe block at the end
+
+            # Fill the first data row (already present in template)
+            if data:
+                row = target_table.rows[1]
+                cells = row.cells
+                cells[0].text = str(1)
+                cells[1].text = data[0].get("Menge", "")
+                cells[2].text = data[0].get("Beschreibung", "")
+                cells[3].text = data[0].get("€/Stk", "") + "€"
+                cells[4].text = data[0].get("Preis gesamt", "") + "€"
+
+                # Format all cells in this row
+                for cell in cells:
+                    format_cell(cell)
+
+                # Letzte Spalte rechtsbündig
+                cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+            # For additional data rows, insert new rows
+            for pos, row_data in enumerate(data[1:], start=2):
+                # 1) Create a new row (style taken from the current last row)
+                row = target_table.add_row()
+                tr = row._tr
+                tbl = target_table._tbl
+
+                # 2) Compute insertion index: just before the footer block
+                insert_at = len(target_table.rows) - FOOTER_ROWS + 1
+
+                # 3) Move the row's XML node to the desired position
+                tbl.remove(tr)          # Detach from end
+                tbl.insert(insert_at, tr)  # Re-insert before footers
+
+                # 4) Rewrap so the proxy matches the new position
+                row = _Row(tr, target_table)
+
+                # 5) Fill cells
+                cells = row.cells
+                cells[0].text = str(pos)
+                cells[1].text = row_data.get("Menge", "")
+                cells[2].text = row_data.get("Beschreibung", "")
+                cells[3].text = row_data.get("€/Stk", "") + "€"
+                cells[4].text = row_data.get("Preis gesamt", "") + "€"
+
+                # 6) Format all cells in this row
+                for cell in cells:
+                    format_cell(cell)
+
+                # 7) Letzte Spalte rechtsbündig
+                cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+            break
+        else:
+            continue
 
 def render_lieferschein(template_path: Path, project_number: str, data: List[Dict[str, str]], output_path: Path) -> None:
     """Fill the Word template with CSV data and save as Lieferschein."""

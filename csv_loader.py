@@ -60,7 +60,7 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str]]:
             logging.info(f"Skipping row {i} with invalid Auftrags-Nr.: {auftrags_nr}")
             continue
         try:
-            dauer = float(row["Dauer (Std)"])
+            dauer = int(float((row["Dauer (Std)"])))
             stundensatz = float(row["Stundensatz (€)"])
             material = float(row["Material (€)"])
         except ValueError:
@@ -70,7 +70,7 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str]]:
             # Only Arbeitsstunden
             logging.info(f"Creating Arbeitsstunden row for Auftrags-Nr.: {auftrags_nr}")
             d = {
-                "Menge": f"{dauer:.2f}",
+                "Menge": f"{dauer}",
                 "Beschreibung": f"Meisterstunde zu Auftrag Nr. {auftrags_nr}",
                 "€/Stk": f"{stundensatz:.2f}",
                 "Preis gesamt": f"{(stundensatz * dauer):.2f}",
@@ -81,7 +81,7 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str]]:
             # Both Arbeitsstunden and Material
             logging.info(f"Creating Arbeitsstunden row for Auftrags-Nr.: {auftrags_nr}")
             d = {
-                "Menge": f"{dauer:.2f}",
+                "Menge": f"{dauer}",
                 "Beschreibung": f"Meisterstunde zu Auftrag Nr. {auftrags_nr}",
                 "€/Stk": f"{stundensatz:.2f}",
                 "Preis gesamt": f"{(stundensatz * dauer):.2f}",
