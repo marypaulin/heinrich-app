@@ -4,12 +4,28 @@ Word document generation and PDF stub for heinrich-metallbau.
 import logging
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from docx.table import _Row
+
+
+def format_price(value: float) -> str:
+    """Format a price value with thousands separator and two decimals, German locale (e.g. 1234.5 -> 1.234,50 €)."""
+    return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + "€"
+
+
+def _calculate_sums_and_vat(data: List[Dict[str, str | int | float]]) -> Tuple[float, float, float]:
+    """Calculate sum_net, vat (19%), and sum_vat."""
+    sum_net = 0.0
+    for row in data:
+        total_price = row.get("Preis gesamt", "0")
+        sum_net += total_price
+    vat = sum_net * 0.19
+    sum_vat = sum_net + vat
+    return sum_net, vat, sum_vat
 
 
 def _replace_placeholders(doc: Document, mapping: Dict[str, str]) -> None:
@@ -46,43 +62,41 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
     # data is a list of dicts with keys: "Menge", "Beschreibung", "€/Stk", "Preis gesamt"
     # Each dict in data corresponds to one row in the table
     # "Pos" is just a running number starting from 1
-    # "Menge" -> <Menge> (second column in table)
-    # "Beschreibung" -> <Beschreibung> (third column in table)
-    # "€/Stk" -> <€/Stk> (fourth column in table)
-    # "Preis gesamt" -> <Preis gesamt> (fifth column in table)
-    # Then we have a row with
-    #   - Static string "Summe" in Pos + Menge columns (verbundene Zelle)
-    #   - Placeholder <Summe> placeholder in "Preis gesamt" column which will be filled with the sum of all "Preis gesamt" values from data
-    # Then we have a row with
-    #   - "Ust. 19% auf <Summe> netto" in Pos + Menge + Beschreibung columns (verbundene Zelle)
-    #   - Placeholder <Ust> in "Preis gesamt" column which will be filled with 19% of the sum
-    # Then we have a row with
-    #   - Static string "Gesamtbetrag" in Pos + Menge + Beschreibung columns
-    #   - Placeholder <Gessumme> in "Preis gesamt" column which will be filled with sum + Ust
+    # "Menge" -> <Menge> (second column)
+    # "Beschreibung" -> <Beschreibung> (third column)
+    # "€/Stk" -> <€/Stk> (fourth column)
+    # "Preis gesamt" -> <Preis gesamt> (fifth column)
     if not doc.tables:
         logging.warning("No tables found in the document to fill.")
         return
     for table in doc.tables:
         if len(table.columns) == 5 and table.cell(0, 0).text == "Pos":
             target_table = table
-            # Find where the summary rows start (last 3 rows)
-            FOOTER_ROWS = 3  # MwSt/Summe block at the end
+            # Find Ust/Summe block (last 3 rows)
+            FOOTER_ROWS = 3
 
             # Fill the first data row (already present in template)
             if data:
+                # 1) Get the first table row
                 row = target_table.rows[1]
+
+                # 2) Fill cells
                 cells = row.cells
                 cells[0].text = str(1)
-                cells[1].text = data[0].get("Menge", "")
-                cells[2].text = data[0].get("Beschreibung", "")
-                cells[3].text = data[0].get("€/Stk", "") + "€"
-                cells[4].text = data[0].get("Preis gesamt", "") + "€"
+                cells[1].text = str(data[0].get("Menge", ""))
+                # Only take the part before the first " (" (if present)
+                description_full = str(data[0].get("Beschreibung", ""))
+                description_main = description_full.split(" (")[0]
+                cells[2].text = description_main
+                cells[3].text = format_price(float(data[0].get('€/Stk', 0)))
+                cells[4].text = format_price(float(data[0].get('Preis gesamt', 0)))
 
-                # Format all cells in this row
+                # 3) Format all cells in this row
                 for cell in cells:
                     format_cell(cell)
 
-                # Letzte Spalte rechtsbündig
+                # 4) Align last two columns to the right
+                cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
             # For additional data rows, insert new rows
@@ -96,7 +110,7 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 insert_at = len(target_table.rows) - FOOTER_ROWS + 1
 
                 # 3) Move the row's XML node to the desired position
-                tbl.remove(tr)          # Detach from end
+                tbl.remove(tr)  # Detach from end
                 tbl.insert(insert_at, tr)  # Re-insert before footers
 
                 # 4) Rewrap so the proxy matches the new position
@@ -105,30 +119,42 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 # 5) Fill cells
                 cells = row.cells
                 cells[0].text = str(pos)
-                cells[1].text = row_data.get("Menge", "")
-                cells[2].text = row_data.get("Beschreibung", "")
-                cells[3].text = row_data.get("€/Stk", "") + "€"
-                cells[4].text = row_data.get("Preis gesamt", "") + "€"
+                cells[1].text = str(row_data.get("Menge", ""))
+                # Only take the part before the first " (" (if present)
+                description_full = str(row_data.get("Beschreibung", ""))
+                description_main = description_full.split(" (")[0]
+                cells[2].text = description_main
+                cells[3].text = format_price(float(row_data.get('€/Stk', 0)))
+                cells[4].text = format_price(float(row_data.get('Preis gesamt', 0)))
 
                 # 6) Format all cells in this row
                 for cell in cells:
                     format_cell(cell)
 
-                # 7) Letzte Spalte rechtsbündig
+                # 7) Align last two columns to the right
+                cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
-
             break
         else:
             continue
 
-def render_lieferschein(template_path: Path, project_number: str, data: List[Dict[str, str]], output_path: Path) -> None:
+def render_lieferschein(
+        template_path: Path,
+        project_number: str,
+        data: List[Dict[str, str | int | float]],
+        output_path: Path) -> None:
     """Fill the Word template with CSV data and save as Lieferschein."""
     doc = Document(template_path)
+
+    # Set up fixed placeholders
     current_date = date.today().strftime("%d.%m.%Y")
     receipt_number = ""
     doctype = "Lieferschein"
     header = "Wir liefern folgende Positionen an:"
     deliver_date = (date.today() + timedelta(days=21)).strftime("%d.%m.%Y")
+
+    # Calculate sums and vat
+    sum_net, vat, sum_gross = _calculate_sums_and_vat(data)
 
     # Placeholder mapping
     mapping = {
@@ -137,6 +163,9 @@ def render_lieferschein(template_path: Path, project_number: str, data: List[Dic
         "<Belegnr>": receipt_number,
         "<Betreffart>": doctype,
         "<Header>": header,
+        "<Summe>": format_price(sum_net),
+        "<Ust>": format_price(vat),
+        "<Gessumme>": format_price(sum_gross),
         "<Datum heute + 21 Tage>": deliver_date,
     }
 

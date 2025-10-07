@@ -10,7 +10,7 @@ from typing import Dict, List
 REQUIRED_FIELDS = ["Auftrags-Nr.", "Dauer (Std)", "Stundensatz (€)", "Material (€)"]
 
 
-def load_csv_data(csv_path: str | Path) -> List[Dict[str, str]]:
+def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
     """Load and transform CSV data to a list of dicts."""
     with open(csv_path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f, delimiter=';')
@@ -51,49 +51,50 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str]]:
     #      "€/Stk": row["Material (€)"],
     #      "Preis gesamt": row["Material (€)"],
     #   }
-    # - All numeric values (except for Auftragsnr.) should be converted to float
-    #   and formatted to 2 decimal places
+    # - "Auftrags-Nr." should be converted to str
+    # - "Dauer (Std)" should be converted to int
+    # - Prices should be converted to float
     result = []
     for i, row in enumerate(rows, start=2):
-        auftrags_nr = row["Auftrags-Nr."]
-        if not auftrags_nr.isdigit() or len(auftrags_nr) != 8:
-            logging.info(f"Skipping row {i} with invalid Auftrags-Nr.: {auftrags_nr}")
+        order_number = row["Auftrags-Nr."]
+        if not order_number.isdigit() or len(order_number) != 8:
+            logging.info(f"Skipping row {i} with invalid Auftrags-Nr.: {order_number}")
             continue
         try:
-            dauer = int(float((row["Dauer (Std)"])))
-            stundensatz = float(row["Stundensatz (€)"])
+            duration = int(float((row["Dauer (Std)"])))
+            hourly_rate = float(row["Stundensatz (€)"])
             material = float(row["Material (€)"])
         except ValueError:
             raise ValueError(f"Invalid numeric value in row {i}")
 
         if material == 0:
             # Only Arbeitsstunden
-            logging.info(f"Creating Arbeitsstunden row for Auftrags-Nr.: {auftrags_nr}")
+            logging.info(f"Creating Arbeitsstunden row for Auftrags-Nr.: {order_number}")
             d = {
-                "Menge": f"{dauer}",
-                "Beschreibung": f"Meisterstunde zu Auftrag Nr. {auftrags_nr}",
-                "€/Stk": f"{stundensatz:.2f}",
-                "Preis gesamt": f"{(stundensatz * dauer):.2f}",
+                "Menge": duration,
+                "Beschreibung": f"Meisterstunde zu Auftrag Nr. {order_number}",
+                "€/Stk": hourly_rate,
+                "Preis gesamt": hourly_rate * duration,
             }
             logging.info(f"Result: {d}")
             result.append(d)
         else:
             # Both Arbeitsstunden and Material
-            logging.info(f"Creating Arbeitsstunden row for Auftrags-Nr.: {auftrags_nr}")
+            logging.info(f"Creating Arbeitsstunden row for Auftrags-Nr.: {order_number}")
             d = {
-                "Menge": f"{dauer}",
-                "Beschreibung": f"Meisterstunde zu Auftrag Nr. {auftrags_nr}",
-                "€/Stk": f"{stundensatz:.2f}",
-                "Preis gesamt": f"{(stundensatz * dauer):.2f}",
+                "Menge": duration,
+                "Beschreibung": f"Meisterstunde zu Auftrag Nr. {order_number}",
+                "€/Stk": hourly_rate,
+                "Preis gesamt": hourly_rate * duration,
             }
             logging.info(f"Result: {d}")
             result.append(d)
-            logging.info(f"Creating Material row for Auftrags-Nr.: {auftrags_nr}")
+            logging.info(f"Creating Material row for Auftrags-Nr.: {order_number}")
             d = {
                 "Menge": "1",
-                "Beschreibung": row["Beschreibung"],
-                "€/Stk": f"{material:.2f}",
-                "Preis gesamt": f"{material:.2f}",
+                "Beschreibung": f"Material zu Auftrag Nr. {order_number} ({row["Beschreibung"]})",
+                "€/Stk": material,
+                "Preis gesamt": material,
             }
             logging.info(f"Result: {d}")
             result.append(d)
