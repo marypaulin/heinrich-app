@@ -9,13 +9,13 @@ from typing import Dict, List
 # Required fields that must be filled
 REQUIRED_FIELDS = ["Auftrags-Nr.", "Dauer (Std)", "Stundensatz (€)", "Material (€)"]
 
-
-def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
-    """Load and transform CSV data to a list of dicts."""
-    def parse_float(value: str) -> float:
+def parse_float(value: str) -> float:
         # Replace comma with dot, strip spaces, handle both "," and "."
         value = value.strip().replace(",", ".")
         return float(value)
+
+def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
+    """Load and transform CSV data to a list of dicts."""
     with open(csv_path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f, delimiter=';')
         rows = list(reader)
@@ -65,9 +65,9 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
             logging.info(f"Skipping row {i} with invalid Auftrags-Nr.: {order_number}")
             continue
         try:
-            duration = float((row["Dauer (Std)"]))
-            hourly_rate = float(row["Stundensatz (€)"])
-            material = float(row["Material (€)"])
+            duration = parse_float(row["Dauer (Std)"])
+            hourly_rate = parse_float(row["Stundensatz (€)"])
+            material = parse_float(row["Material (€)"])
         except ValueError:
             raise ValueError(f"Invalid numeric value in row {i}")
 
