@@ -12,6 +12,10 @@ REQUIRED_FIELDS = ["Auftrags-Nr.", "Dauer (Std)", "Stundensatz (€)", "Material
 
 def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
     """Load and transform CSV data to a list of dicts."""
+    def parse_float(value: str) -> float:
+        # Replace comma with dot, strip spaces, handle both "," and "."
+        value = value.strip().replace(",", ".")
+        return float(value)
     with open(csv_path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f, delimiter=';')
         rows = list(reader)
