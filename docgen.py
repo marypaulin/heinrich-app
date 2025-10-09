@@ -18,7 +18,9 @@ from docx.table import _Row
 
 
 def format_duration(value: float) -> str:
-    """Format a duration value with one decimal, German locale (e.g. 1.5 -> 1,5)."""
+    """Format a duration value with one decimal, German locale (e.g. 1.5 -> 1,5; 2.0 -> 2)."""
+    if value % 1 == 0:
+        return str(int(value))
     return f"{value:.1f}".replace(".", ",")
 
 
@@ -55,7 +57,7 @@ def _replace_placeholders(doc: Document, mapping: Dict[str, str]) -> None:
                                 run.text = run.text.replace(placeholder, value)
 
 
-def format_cell(cell, font_name="Calibri", font_size=10, bold=True):
+def format_cell(cell, font_name="Calibri", font_size=9, bold=True):
     """Set font for all text in a table cell."""
     for paragraph in cell.paragraphs:
         for run in paragraph.runs:
@@ -83,8 +85,6 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
     for table in doc.tables:
         if len(table.columns) == 5 and table.cell(0, 0).text == "Pos":
             target_table = table
-            # Find Ust/Summe block (last 3 rows)
-            FOOTER_ROWS = 3
 
             # Fill the first data row (already present in template)
             if data:
@@ -116,8 +116,8 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 tr = deepcopy(target_table.rows[1]._tr)
                 tbl = target_table._tbl
 
-                # 2) Compute insertion index: just before the footer block
-                insert_at = len(target_table.rows) - FOOTER_ROWS
+                # 2) Compute insertion index
+                insert_at = pos + 2
 
                 # 3) Insert the row's XML node to the desired position
                 tbl.insert(insert_at, tr)
@@ -128,32 +128,13 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 # 5) Fill cells
                 cells = row.cells
                 cells[0].text = str(pos)
-                cells[1].text = str(row_data.get("Menge", ""))
+                cells[1].text = format_duration(float(row_data.get("Menge", "")))
                 # Only take the part before the first " (" (if present)
                 description_full = str(row_data.get("Beschreibung", ""))
                 description_main = description_full.split(" (")[0]
                 cells[2].text = description_main
                 cells[3].text = format_price(float(row_data.get('€/Stk', 0)))
                 cells[4].text = format_price(float(row_data.get('Preis gesamt', 0)))
-
-                # 5) Fill cells, preserving paragraph formatting and fonts
-                # cells = row.cells
-                # # For each cell, clear only the text but keep paragraph and run formatting
-                # # Set new text in the first run of the first paragraph
-                # cell_values = [
-                #     str(pos),
-                #     str(row_data.get("Menge", "")),
-                #     str(row_data.get("Beschreibung", "")).split(" (")[0],
-                #     format_price(float(row_data.get('€/Stk', 0))),
-                #     format_price(float(row_data.get('Preis gesamt', 0))),
-                # ]
-                # for cell, value in zip(cells, cell_values):
-                #     # Only update the first run of the first paragraph
-                #     if cell.paragraphs and cell.paragraphs[0].runs:
-                #         cell.paragraphs[0].runs[0].text = value
-                #     else:
-                #         cell.text = value
-
 
                 # 6) Format all cells in this row
                 for cell in cells:
