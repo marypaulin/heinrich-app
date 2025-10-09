@@ -94,7 +94,7 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 # 2) Fill cells
                 cells = row.cells
                 cells[0].text = str(1)
-                cells[1].text = format_duration(str(data[0].get("Menge", "")))
+                cells[1].text = format_duration(float(data[0].get("Menge", "")))
                 # Only take the part before the first " (" (if present)
                 description_full = str(data[0].get("Beschreibung", ""))
                 description_main = description_full.split(" (")[0]
