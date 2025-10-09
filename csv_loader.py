@@ -52,7 +52,7 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
     #      "Preis gesamt": row["Material (€)"],
     #   }
     # - "Auftrags-Nr." should be converted to str
-    # - "Dauer (Std)" should be converted to int
+    # - "Dauer (Std)" should be converted to float
     # - Prices should be converted to float
     result = []
     for i, row in enumerate(rows, start=2):
@@ -61,7 +61,7 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
             logging.info(f"Skipping row {i} with invalid Auftrags-Nr.: {order_number}")
             continue
         try:
-            duration = int(float((row["Dauer (Std)"])))
+            duration = float((row["Dauer (Std)"]))
             hourly_rate = float(row["Stundensatz (€)"])
             material = float(row["Material (€)"])
         except ValueError:

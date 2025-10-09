@@ -17,6 +17,11 @@ from docx.shared import Pt
 from docx.table import _Row
 
 
+def format_duration(value: float) -> str:
+    """Format a duration value with one decimal, German locale (e.g. 1.5 -> 1,5)."""
+    return f"{value:.1f}".replace(".", ",")
+
+
 def format_price(value: float) -> str:
     """Format a price value with thousands separator and two decimals, German locale (e.g. 1234.5 -> 1.234,50 €)."""
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + "€"
@@ -89,7 +94,7 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 # 2) Fill cells
                 cells = row.cells
                 cells[0].text = str(1)
-                cells[1].text = str(data[0].get("Menge", ""))
+                cells[1].text = format_duration(str(data[0].get("Menge", "")))
                 # Only take the part before the first " (" (if present)
                 description_full = str(data[0].get("Beschreibung", ""))
                 description_main = description_full.split(" (")[0]
@@ -112,7 +117,7 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 tbl = target_table._tbl
 
                 # 2) Compute insertion index: just before the footer block
-                insert_at = len(target_table.rows) - FOOTER_ROWS + 1
+                insert_at = len(target_table.rows) - FOOTER_ROWS
 
                 # 3) Insert the row's XML node to the desired position
                 tbl.insert(insert_at, tr)

@@ -1,5 +1,5 @@
 """
-Path and file discovery utilities for heinrich-metallbau.
+Path and file discovery utilities for heinrich-tool.
 """
 import json
 import logging
