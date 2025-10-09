@@ -76,7 +76,6 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
                 "€/Stk": hourly_rate,
                 "Preis gesamt": hourly_rate * duration,
             }
-            logging.info(f"Result: {d}")
             result.append(d)
         else:
             # Both Arbeitsstunden and Material
@@ -96,6 +95,5 @@ def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
                 "€/Stk": material,
                 "Preis gesamt": material,
             }
-            logging.info(f"Result: {d}")
             result.append(d)
     return result

@@ -2,11 +2,16 @@
 Word document generation and PDF stub for heinrich-metallbau.
 """
 import logging
+import platform
+import shutil
+import subprocess
+from copy import deepcopy
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple
 
 from docx import Document
+from docx2pdf import convert
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from docx.table import _Row
@@ -45,12 +50,13 @@ def _replace_placeholders(doc: Document, mapping: Dict[str, str]) -> None:
                                 run.text = run.text.replace(placeholder, value)
 
 
-def format_cell(cell, font_name="Calibri", font_size=10):
+def format_cell(cell, font_name="Calibri", font_size=10, bold=True):
     """Set font for all text in a table cell."""
     for paragraph in cell.paragraphs:
         for run in paragraph.runs:
             run.font.name = font_name
             run.font.size = Pt(font_size)
+            run.font.bold = bold
 
 
 def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
@@ -101,17 +107,15 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
 
             # For additional data rows, insert new rows
             for pos, row_data in enumerate(data[1:], start=2):
-                # 1) Create a new row (style taken from the current last row)
-                row = target_table.add_row()
-                tr = row._tr
+                # 1) Create a new row
+                tr = deepcopy(target_table.rows[1]._tr)
                 tbl = target_table._tbl
 
                 # 2) Compute insertion index: just before the footer block
                 insert_at = len(target_table.rows) - FOOTER_ROWS + 1
 
-                # 3) Move the row's XML node to the desired position
-                tbl.remove(tr)  # Detach from end
-                tbl.insert(insert_at, tr)  # Re-insert before footers
+                # 3) Insert the row's XML node to the desired position
+                tbl.insert(insert_at, tr)
 
                 # 4) Rewrap so the proxy matches the new position
                 row = _Row(tr, target_table)
@@ -126,6 +130,25 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 cells[2].text = description_main
                 cells[3].text = format_price(float(row_data.get('€/Stk', 0)))
                 cells[4].text = format_price(float(row_data.get('Preis gesamt', 0)))
+
+                # 5) Fill cells, preserving paragraph formatting and fonts
+                # cells = row.cells
+                # # For each cell, clear only the text but keep paragraph and run formatting
+                # # Set new text in the first run of the first paragraph
+                # cell_values = [
+                #     str(pos),
+                #     str(row_data.get("Menge", "")),
+                #     str(row_data.get("Beschreibung", "")).split(" (")[0],
+                #     format_price(float(row_data.get('€/Stk', 0))),
+                #     format_price(float(row_data.get('Preis gesamt', 0))),
+                # ]
+                # for cell, value in zip(cells, cell_values):
+                #     # Only update the first run of the first paragraph
+                #     if cell.paragraphs and cell.paragraphs[0].runs:
+                #         cell.paragraphs[0].runs[0].text = value
+                #     else:
+                #         cell.text = value
+
 
                 # 6) Format all cells in this row
                 for cell in cells:
@@ -142,6 +165,7 @@ def render_lieferschein(
         template_path: Path,
         project_number: str,
         data: List[Dict[str, str | int | float]],
+        rechnung_template_path: Path,
         output_path: Path) -> None:
     """Fill the Word template with CSV data and save as Lieferschein."""
     doc = Document(template_path)
@@ -156,29 +180,126 @@ def render_lieferschein(
     # Calculate sums and vat
     sum_net, vat, sum_gross = _calculate_sums_and_vat(data)
 
-    # Placeholder mapping
-    mapping = {
+    # Placeholder mappings
+    mapping_liefer = {
         "<Datum heute>": current_date,
         "<Lfd Nr.>": project_number,
         "<Belegnr>": receipt_number,
         "<Betreffart>": doctype,
-        "<Header>": header,
+        "<Header>": header
+    }
+    mapping_sum = {
         "<Summe>": format_price(sum_net),
         "<Ust>": format_price(vat),
         "<Gessumme>": format_price(sum_gross),
         "<Datum heute + 21 Tage>": deliver_date,
     }
 
-    _replace_placeholders(doc, mapping)
     _fill_table(doc, data)
+    _replace_placeholders(doc, mapping_sum)
+
+    # Save intermediate document for Rechnung template use
+    doc.save(rechnung_template_path)
+
+    _replace_placeholders(doc, mapping_liefer)
 
     doc.save(output_path)
     logging.info(f"Generated Word document: {output_path}")
 
 
-def render_pdf_stub(pdf_path: Path) -> None:
-    """Stub for PDF generation from DOCX."""
-    # TODO: Implement real DOCX to PDF conversion
-    with open(pdf_path, 'w') as f:
-        f.write('PDF generation not implemented yet.')
-    logging.info(f"Stub PDF created: {pdf_path}")
+def render_rechnung_and_auftrag(
+        template_path: Path,
+        project_number: str,
+        receipt_number: str,
+        output_paths: Dict[str, Path]) -> None:
+    """Generate Rechnung and Auftragsbestaetigung from template."""
+
+    # Load the generated template for Rechnung and Auftragsbestätigung
+    doc = Document(template_path)
+    # Make two independent copies of the loaded document
+    doc_rechnung = deepcopy(doc)
+    doc_auftrag = deepcopy(doc)
+
+    # Set up fixed placeholders
+    current_date = date.today().strftime("%d.%m.%Y")
+    receipt_number = receipt_number
+    doctype_rechnung = "Rechnung"
+    doctype_auftrag = "Auftragsbestätigung"
+    header_rechnung = "Wir bitten um Ausgleich der folgenden Positionen:"
+    header_auftrag = "Wir bestätigen den Auftrag über folgende Positionen:"
+
+    # Placeholder mappings
+    mapping_rechnung = {
+        "<Datum heute>": current_date,
+        "<Lfd Nr.>": project_number,
+        "<Belegnr>": receipt_number,
+        "<Betreffart>": doctype_rechnung,
+        "<Header>": header_rechnung
+    }
+    mapping_auftrag = {
+        "<Datum heute>": current_date,
+        "<Lfd Nr.>": project_number,
+        "<Belegnr>": receipt_number,
+        "<Betreffart>": doctype_auftrag,
+        "<Header>": header_auftrag
+    }
+
+    # Replace placeholders for Rechnung
+    _replace_placeholders(doc_rechnung, mapping_rechnung)
+    doc_rechnung.save(output_paths["rechnung"])
+    logging.info(f"Generated Word document: {output_paths["rechnung"]}")
+
+    # Replace placeholders for Auftragsbestätigung
+    _replace_placeholders(doc_auftrag, mapping_auftrag)
+    doc_auftrag.save(output_paths["auftrag"])
+    logging.info(f"Generated Word document: {output_paths["auftrag"]}")
+
+
+def render_pdf(docx_path: Path) -> None:
+    """Convert DOCX file to PDF using Word on Windows or LibreOffice on Linux."""
+
+    # Derive output PDF path from the DOCX path
+    pdf_path = docx_path.with_suffix(".pdf")
+    system = platform.system()
+
+    if system == "Windows":
+        # Use Microsoft Word via docx2pdf for perfect formatting
+        try:
+            convert(str(docx_path), str(pdf_path))
+            logging.info(f"Generated PDF document via Word: {pdf_path}")
+            return
+        except Exception as e:
+            logging.error(f"Word-based PDF conversion failed: {e}")
+            return
+
+    elif system == "Linux":
+        # Use LibreOffice headless mode as fallback
+        soffice = shutil.which("soffice") or shutil.which("libreoffice")
+        if soffice:
+            try:
+                subprocess.run(
+                    [
+                        soffice,
+                        "--headless",
+                        "--nologo",
+                        "--nodefault",
+                        "--nofirststartwizard",
+                        "--convert-to", "pdf",
+                        "--outdir", str(pdf_path.parent),
+                        str(docx_path)],
+                    check=True,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                logging.info(f"Generated PDF document via LibreOffice: {pdf_path}")
+                return
+            except subprocess.CalledProcessError as e:
+                logging.error(f"LibreOffice PDF conversion failed: {e}")
+                return
+
+    # If no supported system or conversion failed
+    logging.error(
+        "PDF generation not supported. "
+        "Please install Microsoft Word (on Windows) or LibreOffice (on Linux)."
+    )
