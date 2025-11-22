@@ -94,13 +94,15 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 # 2) Fill cells
                 cells = row.cells
                 cells[0].text = str(1)
-                cells[1].text = format_duration(float(data[0].get("Menge", "")))
+                cells[1].text = format_duration(
+                    float(data[0].get("Menge", "")))
                 # Only take the part before the first " (" (if present)
                 description_full = str(data[0].get("Beschreibung", ""))
                 description_main = description_full.split(" (")[0]
                 cells[2].text = description_main
                 cells[3].text = format_price(float(data[0].get('€/Stk', 0)))
-                cells[4].text = format_price(float(data[0].get('Preis gesamt', 0)))
+                cells[4].text = format_price(
+                    float(data[0].get('Preis gesamt', 0)))
 
                 # 3) Format all cells in this row
                 for cell in cells:
@@ -128,13 +130,15 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 # 5) Fill cells
                 cells = row.cells
                 cells[0].text = str(pos)
-                cells[1].text = format_duration(float(row_data.get("Menge", "")))
+                cells[1].text = format_duration(
+                    float(row_data.get("Menge", "")))
                 # Only take the part before the first " (" (if present)
                 description_full = str(row_data.get("Beschreibung", ""))
                 description_main = description_full.split(" (")[0]
                 cells[2].text = description_main
                 cells[3].text = format_price(float(row_data.get('€/Stk', 0)))
-                cells[4].text = format_price(float(row_data.get('Preis gesamt', 0)))
+                cells[4].text = format_price(
+                    float(row_data.get('Preis gesamt', 0)))
 
                 # 6) Format all cells in this row
                 for cell in cells:
@@ -147,12 +151,13 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
         else:
             continue
 
+
 def render_lieferschein(
         template_path: Path,
         project_number: str,
         data: List[Dict[str, str | int | float]],
         rechnung_template_path: Path,
-        output_path: Path) -> None:
+        target_path: Path) -> None:
     """Fill the Word template with CSV data and save as Lieferschein."""
     doc = Document(template_path)
 
@@ -189,15 +194,15 @@ def render_lieferschein(
 
     _replace_placeholders(doc, mapping_liefer)
 
-    doc.save(output_path)
-    logging.info(f"Generated Word document: {output_path}")
+    doc.save(target_path)
+    logging.info(f"Generated Word document: {target_path}")
 
 
 def render_rechnung_and_auftrag(
         template_path: Path,
         project_number: str,
         receipt_number: str,
-        output_paths: Dict[str, Path]) -> None:
+        target_paths: Dict[str, Path]) -> None:
     """Generate Rechnung and Auftragsbestaetigung from template."""
 
     # Load the generated template for Rechnung and Auftragsbestätigung
@@ -232,13 +237,13 @@ def render_rechnung_and_auftrag(
 
     # Replace placeholders for Rechnung
     _replace_placeholders(doc_rechnung, mapping_rechnung)
-    doc_rechnung.save(output_paths["rechnung"])
-    logging.info(f"Generated Word document: {output_paths["rechnung"]}")
+    doc_rechnung.save(target_paths["rechnung"])
+    logging.info(f"Generated Word document: {target_paths["rechnung"]}")
 
     # Replace placeholders for Auftragsbestätigung
     _replace_placeholders(doc_auftrag, mapping_auftrag)
-    doc_auftrag.save(output_paths["auftrag"])
-    logging.info(f"Generated Word document: {output_paths["auftrag"]}")
+    doc_auftrag.save(target_paths["auftrag"])
+    logging.info(f"Generated Word document: {target_paths["auftrag"]}")
 
 
 def render_pdf(docx_path: Path) -> None:
@@ -278,7 +283,8 @@ def render_pdf(docx_path: Path) -> None:
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
-                logging.info(f"Generated PDF document via LibreOffice: {pdf_path}")
+                logging.info(
+                    f"Generated PDF document via LibreOffice: {pdf_path}")
                 return
             except subprocess.CalledProcessError as e:
                 logging.error(f"LibreOffice PDF conversion failed: {e}")
