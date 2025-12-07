@@ -8,8 +8,8 @@ Es handelt sich zur Zeit um ein Kommandozeilen-Tool, das mit Python ausgeführt 
 ## Voraussetzungen
 
 - Installiertes **Python 3.12** (oder neuer)
-- Abhängigkeiten werden mit `pip` installiert (z. B. `python-docx` oder `docxtpl`)
-- Ein vorhandenes **Projektverzeichnis** in `RHI/` (siehe unten)
+- Abhängigkeiten wurden mit `pip install -r requirements` installiert
+- Ein vorhandenes **Projektverzeichnis** in `/Pfad/zu/RHI/` (siehe unten)
 
 ---
 
@@ -25,11 +25,11 @@ Es handelt sich zur Zeit um ein Kommandozeilen-Tool, das mit Python ausgeführt 
     │   ├── 1253/
     │   │   └── Vordruck_Rechnung_1253.docx
     │   └── ...
-    Pfad/zu/RHI/
+    /Pfad/zu/RHI/
     ├── 1235 - Allgemein Juli/
     │   ├── heinrich_zeiterfassung_2025-09-01.csv
-    │   ├── Lieferschein Nr. 1235.docx
-    │   ├── Rechnung Nr. 1235 - 4504049161.docx
+    │   ├── Lieferschein Nr. 1235.docx  # Output des Tools für mode "liefer"
+    │   ├── Rechnung Nr. 1235 - 4504049161.docx # Output des Tools für mode "rechnung"
     │   └── ...
     └── ...
 
@@ -68,8 +68,10 @@ Das Programm wird im Projektordner aus der Kommandozeile gestartet.
 
 - Liest das erstellte Rechnungstemplate aus dem `output` Ordner
 - Erstellt im Ordner `RHI/1235 - .../`:
-  - `Auftragsbestätigung Nr. 1235 - 4504049161.docx/.pdf`
-  - `Rechnung Nr. 1235 - 4504049161.docx/.pdf`
+  - `Auftragsbestätigung Nr. 1235 - 4504049161.docx`
+  - `Auftragsbestätigung Nr. 1235 - 4504049161.pdf`
+  - `Rechnung Nr. 1235 - 4504049161.docx`
+  - `Rechnung Nr. 1235 - 4504049161.pdf`
 
 ---
 
