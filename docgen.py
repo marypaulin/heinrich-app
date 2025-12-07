@@ -16,7 +16,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from docx.table import _Row
 
-from paths import get_intermediate_rechnung_path
+from paths import VORDRUCK_PATH, get_intermediate_rechnung_path
 
 
 def format_duration(value: float) -> str:
@@ -155,12 +155,14 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
 
 
 def render_lieferschein(
-        template_path: Path,
         project_number: str,
         data: List[Dict[str, str | int | float]],
         target_path: Path) -> None:
     """Fill the Word template with CSV data and save as Lieferschein."""
-    doc = Document(template_path)
+    try:
+        doc = Document(VORDRUCK_PATH)
+    except FileNotFoundError:
+        raise ValueError(f"Template not found: {VORDRUCK_PATH}")
 
     # Set up fixed placeholders
     current_date = date.today().strftime("%d.%m.%Y")

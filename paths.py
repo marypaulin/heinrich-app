@@ -33,14 +33,6 @@ def find_latest_csv(order_folder: Path) -> Path:
     return latest
 
 
-def get_template_path() -> Path:
-    """Get the path to the Word template."""
-    path = VORDRUCK_PATH
-    if not path.exists():
-        raise FileNotFoundError(f"Template not found: {path}")
-    return path
-
-
 def get_intermediate_project_dir(project_number: str) -> Path:
     """templates/intermediate/<project_number>/"""
     return INTERMEDIATE_ROOT / project_number
