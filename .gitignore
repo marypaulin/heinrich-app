@@ -1,9 +1,9 @@
 config.json
 RHI/
-RHI_old/
 templates/
 output/
 __pycache__/
 *.egg-info/
 .vscode
 .venv/
+

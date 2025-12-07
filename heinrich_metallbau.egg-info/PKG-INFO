@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: heinrich-metallbau
-Version: 0.1.0
-Summary: CLI utility to generate documents from CSV and Word template.
-Author-email: Marie Pauline Sauvant <mp.sauvant@gmail.com>
-Requires-Python: >=3.12.5
-Requires-Dist: python-docx>=1.1.0
-Requires-Dist: docx>=0.2.4
