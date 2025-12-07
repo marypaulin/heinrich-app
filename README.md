@@ -16,7 +16,7 @@ Es handelt sich zur Zeit um ein Kommandozeilen-Tool, das mit Python ausgeführt 
 ## Ordnerstruktur
 
     heinrich-tool/
-    ├── main.py
+    ├── cli.py
     ├── templates/
     │   └── Vordruck.docx       # Word-Vorlage mit Platzhaltern
     ├── output/                 # Output Ordner für temporäres Rechnungstemplate
@@ -54,7 +54,7 @@ Das Programm wird im Projektordner aus der Kommandozeile gestartet.
 
 ### Lieferschein erzeugen
 
-    python main.py 1235 liefer
+    python cli.py 1235 liefer
 
 - Liest die CSV im Ordner `RHI/1235 - .../`
 - Befüllt die Vorlage `Vordruck.docx`
@@ -64,7 +64,7 @@ Das Programm wird im Projektordner aus der Kommandozeile gestartet.
 
 ### Auftragsbestätigung & Rechnung erzeugen
 
-    python main.py 1235 rechnung 4504049161
+    python cli.py 1235 rechnung 4504049161
 
 - Liest das erstellte Rechnungstemplate aus dem `output` Ordner
 - Erstellt im Ordner `RHI/1235 - .../`:
