@@ -1,5 +1,5 @@
 """
-Word document generation and PDF stub for heinrich-metallbau.
+Word and PDF document generation for heinrich-metallbau.
 """
 import logging
 import platform
@@ -16,7 +16,9 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from docx.table import _Row
 
-from paths import VORDRUCK_PATH, get_intermediate_rechnung_path
+from paths import (VORDRUCK_PATH, get_auftrag_target_path,
+                   get_intermediate_rechnung_path, get_liefer_target_path,
+                   get_rechnung_target_path)
 
 
 def format_duration(value: float) -> str:
@@ -154,11 +156,11 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
             continue
 
 
-def render_lieferschein(
+def render_lieferschein_docx(
         project_number: str,
         data: List[Dict[str, str | int | float]],
         target_path: Path) -> None:
-    """Fill the Word template with CSV data and save as Lieferschein."""
+    """Fill the Word template with CSV data and save as Lieferschein DOCX."""
     try:
         doc = Document(VORDRUCK_PATH)
     except FileNotFoundError:
@@ -203,11 +205,11 @@ def render_lieferschein(
     logging.info(f"Generated Word document: {target_path}")
 
 
-def render_rechnung_and_auftrag(
+def render_rechnung_and_auftrag_docx(
         project_number: str,
         receipt_number: str,
         target_paths: Dict[str, Path]) -> None:
-    """Generate Rechnung and Auftragsbestaetigung from template."""
+    """Generate Rechnung and Auftragsbestaetigung DOCX from intermediate template."""
 
     # Load the generated template for Rechnung and Auftragsbestätigung
     intermediate_path = get_intermediate_rechnung_path(project_number)
@@ -300,3 +302,30 @@ def render_pdf(docx_path: Path) -> None:
         "PDF generation not supported. "
         "Please install Microsoft Word (on Windows) or LibreOffice (on Linux)."
     )
+
+
+def render_lieferschein(
+        project_number: str,
+        data: List[Dict[str, str | int | float]],
+        project_dir: Path) -> None:
+    """Render Lieferschein in DOCX and PDF format"""
+    target_path = get_liefer_target_path(project_dir, project_number)
+    render_lieferschein_docx(project_number, data, target_path)
+    render_pdf(target_path)
+
+
+def render_rechnung_and_auftrag(
+        project_number: str,
+        receipt_number: str,
+        project_dir: Path) -> None:
+    """Render Rechnung and Auftragsbestätigung in DOCX and PDF format"""
+    target_paths = {
+        "rechnung": get_rechnung_target_path(project_dir, project_number, receipt_number),
+        "auftrag": get_auftrag_target_path(project_dir, project_number, receipt_number)
+    }
+    render_rechnung_and_auftrag_docx(
+        project_number,
+        receipt_number,
+        target_paths)
+    render_pdf(target_paths["rechnung"])
+    render_pdf(target_paths["auftrag"])
