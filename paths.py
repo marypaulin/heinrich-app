@@ -6,24 +6,17 @@ import logging
 from pathlib import Path
 from typing import Dict
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+CONFIG_PATH = PROJECT_ROOT / "config.json"
 
-def load_data_root_from_config(config_path: str = "config.json") -> Path:
-    """Load DATA_ROOT from config.json."""
-    with open(config_path, "r") as f:
-        config = json.load(f)
-    data_root = config["DATA_ROOT"]
-    return Path(data_root)
-
-
-DATA_ROOT = load_data_root_from_config()
 TEMPLATE_DIR = Path('templates')
 TEMPLATE_NAME = Path('Vordruck.docx')
 OUTPUT_DIR = Path('output')
 
 
-def find_project_folder(project_number: str) -> Path:
+def find_project_folder(data_root: Path, project_number: str) -> Path:
     """Find the order folder with the given 4-digit project number as prefix."""
-    for folder in DATA_ROOT.iterdir():
+    for folder in data_root.iterdir():
         if folder.is_dir() and folder.name.startswith(f"{project_number} "):
             logging.info(f"Found order folder: {folder}")
             return folder
