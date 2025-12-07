@@ -1,7 +1,6 @@
 """
 Path and file discovery utilities for heinrich-tool.
 """
-import json
 import logging
 from pathlib import Path
 from typing import Dict
@@ -9,9 +8,9 @@ from typing import Dict
 PROJECT_ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = PROJECT_ROOT / "config.json"
 
-TEMPLATE_DIR = Path('templates')
-TEMPLATE_NAME = Path('Vordruck.docx')
-OUTPUT_DIR = Path('output')
+TEMPLATES_DIR = PROJECT_ROOT / "templates"
+VORDRUCK_PATH = TEMPLATES_DIR / "Vordruck.docx"
+INTERMEDIATE_ROOT = TEMPLATES_DIR / "intermediate"
 
 
 def find_project_folder(data_root: Path, project_number: str) -> Path:
@@ -36,22 +35,21 @@ def find_latest_csv(order_folder: Path) -> Path:
 
 def get_template_path() -> Path:
     """Get the path to the Word template."""
-    path = TEMPLATE_DIR / TEMPLATE_NAME
+    path = VORDRUCK_PATH
     if not path.exists():
         raise FileNotFoundError(f"Template not found: {path}")
     return path
 
 
-def create_output_dir(project_number: str):
-    """Create the output directory if it doesn't exist."""
-    project_output_dir = Path(OUTPUT_DIR / project_number)
-    project_output_dir.mkdir(parents=True, exist_ok=True)
+def get_intermediate_project_dir(project_number: str) -> Path:
+    """templates/intermediate/<project_number>/"""
+    return INTERMEDIATE_ROOT / project_number
 
 
-def get_rechnung_template_path(project_number: str) -> Path:
-    """Get the path to the Rechnung Word template."""
-    path = Path(OUTPUT_DIR / project_number /
-                f"Vordruck_Rechnung_{project_number}.docx")
+def get_intermediate_rechnung_path(project_number: str) -> Path:
+    """templates/intermediate/<project_number>/Vordruck_Rechnung_<project_number>.docx"""
+    path = get_intermediate_project_dir(
+        project_number) / f"Vordruck_Rechnung_{project_number}.docx"
     return path
 
 
@@ -84,13 +82,3 @@ def get_target_paths(
     else:
         # Defensive programming: validate inputs at function boundary
         raise ValueError(f"Unknown mode: {mode}")
-
-
-def clean_up_template(rechnung_template_path: Path):
-    """Delete the Rechnung template file if it exists."""
-    if rechnung_template_path.exists():
-        rechnung_template_path.unlink()
-        logging.info(f"Deleted temporary template: {rechnung_template_path}")
-    else:
-        logging.warning(
-            f"Template to delete not found: {rechnung_template_path}")

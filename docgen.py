@@ -16,6 +16,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from docx.table import _Row
 
+from paths import get_intermediate_rechnung_path
+
 
 def format_duration(value: float) -> str:
     """Format a duration value with one decimal, German locale (e.g. 1.5 -> 1,5; 2.0 -> 2)."""
@@ -156,7 +158,6 @@ def render_lieferschein(
         template_path: Path,
         project_number: str,
         data: List[Dict[str, str | int | float]],
-        rechnung_template_path: Path,
         target_path: Path) -> None:
     """Fill the Word template with CSV data and save as Lieferschein."""
     doc = Document(template_path)
@@ -190,7 +191,9 @@ def render_lieferschein(
     _replace_placeholders(doc, mapping_sum)
 
     # Save intermediate document for Rechnung template use
-    doc.save(rechnung_template_path)
+    intermediate_path = get_intermediate_rechnung_path(project_number)
+    intermediate_path.parent.mkdir(parents=True, exist_ok=True)
+    doc.save(intermediate_path)
 
     _replace_placeholders(doc, mapping_liefer)
 
@@ -199,14 +202,14 @@ def render_lieferschein(
 
 
 def render_rechnung_and_auftrag(
-        template_path: Path,
         project_number: str,
         receipt_number: str,
         target_paths: Dict[str, Path]) -> None:
     """Generate Rechnung and Auftragsbestaetigung from template."""
 
     # Load the generated template for Rechnung and Auftragsbestätigung
-    doc = Document(template_path)
+    intermediate_path = get_intermediate_rechnung_path(project_number)
+    doc = Document(intermediate_path)
     # Make two independent copies of the loaded document
     doc_rechnung = deepcopy(doc)
     doc_auftrag = deepcopy(doc)
