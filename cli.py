@@ -3,7 +3,7 @@ heinrich-metallbau CLI utility
 """
 import logging
 
-from args import parse_cli_args
+from cli_args_parser import parse_cli_args
 from core.config import load_config
 from csv_loader import load_csv_data
 from docgen import render_lieferschein, render_pdf, render_rechnung_and_auftrag
