@@ -20,7 +20,16 @@ def load_hourly_rate_mapping_from_config(config_path: str = "config.json") -> Pa
     return hourly_rate_mapping
 
 
+def load_hourly_rate_default_from_config(config_path: str = "config.json") -> Path:
+    """Load HOURLY_RATE_DEFAULT from config.json."""
+    with open(config_path, "r") as f:
+        config = json.load(f)
+    hourly_rate_default = config["HOURLY_RATE_DEFAULT"]
+    return hourly_rate_default
+
+
 HOURLY_RATE_MAPPING = load_hourly_rate_mapping_from_config()
+HOURLY_RATE_DEFAULT = load_hourly_rate_default_from_config()
 
 
 def get_description(hourly_rate: float) -> str:
@@ -29,8 +38,8 @@ def get_description(hourly_rate: float) -> str:
     if key in HOURLY_RATE_MAPPING:
         return HOURLY_RATE_MAPPING[key]
     logging.warning(
-        f"Unknown hourly rate {hourly_rate}, using default description.")
-    return HOURLY_RATE_MAPPING["DEFAULT"]
+        f"Unknown hourly rate {hourly_rate}, using default description \"{HOURLY_RATE_DEFAULT}\"")
+    return HOURLY_RATE_DEFAULT
 
 
 def parse_float(value: str) -> float:
