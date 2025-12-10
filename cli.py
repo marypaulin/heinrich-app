@@ -21,25 +21,21 @@ def main():
     if args.mode == 'liefer':
         csv_path = get_latest_csv_path(project_dir)
         data = load_csv_data(csv_path)
-        try:
-            render_lieferschein(args.project_number,
-                                data,
-                                project_dir)
-        except ValueError as e:
-            logging.error(str(e))
-            sys.exit(1)
+        render_lieferschein(args.project_number,
+                            data,
+                            project_dir)
     elif args.mode == 'rechnung':
-        try:
-            render_rechnung_and_auftrag(
-                args.project_number,
-                args.receipt_number,
-                project_dir)
-        except ValueError as e:
-            logging.error(str(e))
-            sys.exit(1)
+        render_rechnung_and_auftrag(
+            args.project_number,
+            args.receipt_number,
+            project_dir)
     else:
         logging.error(f"Unknown mode: {args.mode}")
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except (FileNotFoundError, ValueError) as e:
+        logging.error(e)
+        sys.exit(1)
