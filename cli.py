@@ -7,6 +7,7 @@ import sys
 from cli_args_parser import parse_cli_args
 from core.config import load_config
 from csv_loader import load_csv_data
+from data_transformer import csv_rows_to_line_items
 from docgen import render_lieferschein, render_rechnung_and_auftrag
 from paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
 
@@ -20,10 +21,12 @@ def main():
 
     if args.mode == 'liefer':
         csv_path = get_latest_csv_path(project_dir)
-        data = load_csv_data(csv_path)
+        csv_rows = load_csv_data(csv_path, config)
+        line_items = csv_rows_to_line_items(csv_rows, config)
         render_lieferschein(args.project_number,
-                            data,
-                            project_dir)
+                            line_items,
+                            project_dir,
+                            config)
     elif args.mode == 'rechnung':
         render_rechnung_and_auftrag(
             args.project_number,

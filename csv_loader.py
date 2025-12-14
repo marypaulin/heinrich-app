@@ -1,146 +1,103 @@
 """
-CSV loading utility for heinrich-metallbau.
+CSV loading utility
 """
 import csv
-import json
-import logging
+from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import List
+
+from core.config import Config
+from models import CsvRow
+
+CSV_COL_DATE = "Datum"
+CSV_COL_ORDER_NUMBER = "Auftrags-Nr."
+CSV_COL_DESC = "Beschreibung"
+CSV_COL_DURATION = "Dauer (Std)"
+CSV_COL_HOURLY_RATE = "Stundensatz (€)"
+CSV_COL_MATERIAL = "Material (€)"
+CSV_COL_TOTAL = "Gesamtkosten (€)"
 
 # Required fields that must be filled
-REQUIRED_FIELDS = ["Auftrags-Nr.",
-                   "Dauer (Std)", "Stundensatz (€)", "Material (€)"]
+REQUIRED_FIELDS = [
+    CSV_COL_ORDER_NUMBER,
+    CSV_COL_DURATION,
+    CSV_COL_HOURLY_RATE,
+    CSV_COL_MATERIAL
+]
 
 
-def load_hourly_rate_mapping_from_config(config_path: str = "config.json") -> Path:
-    """Load HOURLY_RATE_MAPPING from config.json."""
-    with open(config_path, "r") as f:
-        config = json.load(f)
-    hourly_rate_mapping = config["HOURLY_RATE_MAPPING"]
-    return hourly_rate_mapping
+def _parse_date(i: int, value: str, config: Config) -> date:
+    """Parse str to date from config.date_format"""
+    value = value.strip()
+    try:
+        return datetime.strptime(value, config.date_format)
+    except ValueError:
+        raise ValueError(f"Invalid date format in row {i}: {value}")
 
 
-def load_hourly_rate_default_from_config(config_path: str = "config.json") -> Path:
-    """Load HOURLY_RATE_DEFAULT from config.json."""
-    with open(config_path, "r") as f:
-        config = json.load(f)
-    hourly_rate_default = config["HOURLY_RATE_DEFAULT"]
-    return hourly_rate_default
-
-
-HOURLY_RATE_MAPPING = load_hourly_rate_mapping_from_config()
-HOURLY_RATE_DEFAULT = load_hourly_rate_default_from_config()
-
-
-def get_description(hourly_rate: float) -> str:
-    """Get description based on hourly rate"""
-    key = f"{hourly_rate:.2f}"
-    if key in HOURLY_RATE_MAPPING:
-        return HOURLY_RATE_MAPPING[key]
-    logging.warning(
-        f"Unknown hourly rate {hourly_rate}, using default description \"{HOURLY_RATE_DEFAULT}\"")
-    return HOURLY_RATE_DEFAULT
-
-
-def parse_float(value: str) -> float:
-    # Replace comma with dot, strip spaces, handle both "," and "."
+def _parse_float(i: int, value: str) -> float:
+    """Replace comma with dot, strip spaces, handle both ',' and '.'"""
     value = value.strip().replace(",", ".")
     try:
         return float(value)
     except ValueError:
-        raise ValueError(f"Invalid numeric value {value}")
+        raise ValueError(f"Invalid numeric value in row {i}: {value}")
 
 
-def load_csv_data(csv_path: str | Path) -> List[Dict[str, str | int | float]]:
-    """Load and transform CSV data to a list of dicts."""
+def load_csv_data(csv_path: Path, config: Config) -> List[CsvRow]:
+    """
+    Load and parse a CSV file into a list of CsvRow objects.
+
+    This function is responsible for:
+    - reading the CSV file,
+    - validating required columns,
+    - parsing strings into typed values (date, float),
+    - and creating typed CsvRow domain objects.
+
+    Column-to-attribute mapping:
+        CSV column          → CsvRow attribute
+        ---------------------------------------
+        "Datum"             → date
+        "Auftrags-Nr."      → order_number
+        "Beschreibung"      → description
+        "Dauer (Std)"       → duration_hours
+        "Stundensatz (€)"   → hourly_rate
+        "Material (€)"      → material_cost
+        "Gesamtkosten (€)"  → total_cost
+
+    Parameters:
+        csv_path: Path to the CSV file to load.
+        config: Application configuration (used for date parsing).
+
+    Returns:
+        A list of CsvRow objects representing the parsed CSV rows.
+
+    Raises:
+        ValueError: If required fields are missing or values cannot be parsed.
+        FileNotFoundError: If the CSV file does not exist.
+    """
     with open(csv_path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f, delimiter=';')
         rows = list(reader)
 
-    # Check required fields
+    result = []
+
     for i, row in enumerate(rows, start=2):
+        # Check required fields
         missing = [field for field in REQUIRED_FIELDS if not row.get(field)]
         if missing:
             raise ValueError(
-                f"Missing value(s) in row {i}: {', '.join(missing)}")
+                f"Missing value(s) in row {i-1}: {', '.join(missing)}")
 
-    # Transform CSV rows according to the following rules:
-    # - The result is a list of dicts with keys:
-    #   "Menge", "Beschreibung", "€/Stk", "Preis gesamt"
-    # - For each row in CSV:
-    # - If "Auftrags-Nr." is not eight digits, skip this row
-    # - If "Material (€)" is 0, this row is a "Arbeitsstunden" row
-    #   and the resulting dict will be:
-    #   {
-    #      "Menge": row["Dauer (Std)"],
-    #      "Beschreibung": f"Meister/Helferstunde [Sonntag] zu Auftrag Nr. {row["Auftrags-Nr."]}",
-    #      "€/Stk": row["Stundensatz (€)"],
-    #      "Preis gesamt": row["Material (€)"] * row["Dauer (Std)"],
-    #   }
-    # - Otherwise, this row splits to two rows - one "Arbeitsstunden"
-    #   and one "Material" row and the resulting dicts will be:
-    #   1. Arbeitsstunden dict:
-    #   {
-    #      "Menge": row["Dauer (Std)"],
-    #      "Beschreibung": f"Meister/Helferstunde [Sonntag] zu Auftrag Nr. {row["Auftrags-Nr."],
-    #      "€/Stk": row["Stundensatz (€)"],
-    #      "Preis gesamt": row["Stundensatz (€)"] * row["Dauer (Std)"],
-    #   }
-    #   2. Material dict:
-    #   {
-    #      "Menge": 1,
-    #      "Beschreibung": row["Beschreibung"],
-    #      "€/Stk": row["Material (€)"],
-    #      "Preis gesamt": row["Material (€)"],
-    #   }
-    # - "Auftrags-Nr." should be converted to str
-    # - "Dauer (Std)" should be converted to float
-    # - Prices should be converted to float
-    result = []
-    for i, row in enumerate(rows, start=2):
-        order_number = row["Auftrags-Nr."]
-        if not order_number.isdigit() or len(order_number) != 8:
-            logging.info(
-                f"Skipping row {i} with invalid Auftrags-Nr.: {order_number}")
-            continue
-        try:
-            duration = parse_float(row["Dauer (Std)"])
-            hourly_rate = parse_float(row["Stundensatz (€)"])
-            hourly_description = get_description(hourly_rate)
-            material = parse_float(row["Material (€)"])
-        except ValueError as e:
-            raise ValueError(f"Error in row {i}: {e}") from e
-
-        if material == 0:
-            # Only Arbeitsstunden
-            logging.info(
-                f"Creating Arbeitsstunden row for Auftrags-Nr.: {order_number}")
-            d = {
-                "Menge": duration,
-                "Beschreibung": f"{hourly_description} zu Auftrag Nr. {order_number}",
-                "€/Stk": hourly_rate,
-                "Preis gesamt": hourly_rate * duration,
-            }
-            result.append(d)
-        else:
-            # Both Arbeitsstunden and Material
-            logging.info(
-                f"Creating Arbeitsstunden row for Auftrags-Nr.: {order_number}")
-            d = {
-                "Menge": duration,
-                "Beschreibung": f"{hourly_description} zu Auftrag Nr. {order_number}",
-                "€/Stk": hourly_rate,
-                "Preis gesamt": hourly_rate * duration,
-            }
-            logging.info(f"Result: {d}")
-            result.append(d)
-            logging.info(
-                f"Creating Material row for Auftrags-Nr.: {order_number}")
-            d = {
-                "Menge": "1",
-                "Beschreibung": f"Material zu Auftrag Nr. {order_number} ({row["Beschreibung"]})",
-                "€/Stk": material,
-                "Preis gesamt": material,
-            }
-            result.append(d)
+        csv_row = CsvRow(
+            row_number=i-1,
+            date=_parse_date(i-1, row[CSV_COL_DATE], config),
+            order_number=row[CSV_COL_ORDER_NUMBER],
+            description=row[CSV_COL_DESC],
+            duration_hours=_parse_float(i-1, row[CSV_COL_DURATION]),
+            hourly_rate=_parse_float(i-1, row[CSV_COL_HOURLY_RATE]),
+            material_cost=_parse_float(i-1, row[CSV_COL_MATERIAL]),
+            total_cost=_parse_float(i-1, row[CSV_COL_TOTAL])
+        )
+        result.append(csv_row)
     return result

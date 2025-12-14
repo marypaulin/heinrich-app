@@ -9,6 +9,8 @@ class Config:
     data_root: Path
     hourly_rate_mapping: Dict[float, str]
     hourly_rate_default: str
+    date_format: str
+    vat_rate: float
 
 
 def load_config(path: Path) -> Config:
@@ -28,9 +30,13 @@ def load_config(path: Path) -> Config:
     }
 
     default_description = raw["HOURLY_RATE_DEFAULT"]
+    date_format = raw["DATE_FORMAT"]
+    vat_rate = float(raw["VAT_RATE"])
 
     return Config(
         data_root=data_root,
         hourly_rate_mapping=mapping_converted,
-        hourly_rate_default=default_description
+        hourly_rate_default=default_description,
+        date_format=date_format,
+        vat_rate=vat_rate
     )

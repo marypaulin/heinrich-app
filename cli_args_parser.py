@@ -18,11 +18,13 @@ def parse_cli_args(argv: Iterable[str] | None = None) -> InputArgs:
     )
     parser.add_argument(
         'mode',
+        type=str.lower,
         choices=['liefer', 'rechnung'],
         help='Mode: liefer or rechnung'
     )
     parser.add_argument(
         'receipt_number',
+        type=str,
         nargs='?',
         default=None,
         help='Order number (required for rechnung)'

@@ -3,7 +3,6 @@ Path and file discovery utilities for heinrich-tool.
 """
 import logging
 from pathlib import Path
-from typing import Dict
 
 HEINRICH_ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = HEINRICH_ROOT / "config.json"

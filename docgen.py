@@ -12,39 +12,40 @@ from typing import Dict, List, Tuple
 
 from docx import Document
 from docx2pdf import convert
+from docx.document import Document as DocxDocument
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.opc.exceptions import PackageNotFoundError
 from docx.shared import Pt
 from docx.table import _Row
 
+from core.config import Config
+from models import LineItem
 from paths import (VORDRUCK_PATH, get_auftrag_target_path,
                    get_intermediate_rechnung_path, get_liefer_target_path,
                    get_rechnung_target_path)
 
 
-def format_duration(value: float) -> str:
-    """Format a duration value with one decimal, German locale (e.g. 1.5 -> 1,5; 2.0 -> 2)."""
+def _format_quantity(value: float) -> str:
+    """Format a quantity value with one decimal, German locale (e.g. 1.5 -> 1,5; 2.0 -> 2)."""
     if value % 1 == 0:
         return str(int(value))
     return f"{value:.1f}".replace(".", ",")
 
 
-def format_price(value: float) -> str:
+def _format_price(value: float) -> str:
     """Format a price value with thousands separator and two decimals, German locale (e.g. 1234.5 -> 1.234,50 €)."""
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + "€"
 
 
-def _calculate_sums_and_vat(data: List[Dict[str, str | int | float]]) -> Tuple[float, float, float]:
-    """Calculate sum_net, vat (19%), and sum_vat."""
-    sum_net = 0.0
-    for row in data:
-        total_price = row.get("Preis gesamt", "0")
-        sum_net += total_price
-    vat = sum_net * 0.19
-    sum_vat = sum_net + vat
-    return sum_net, vat, sum_vat
+def _calculate_sums_and_vat(items: List[LineItem], config: Config) -> Tuple[float, float, float]:
+    """Calculate sum_net, vat, and sum_gross from LineItems."""
+    sum_net = sum(item.total_price for item in items)
+    vat = sum_net * config.vat_rate
+    sum_gross = sum_net + vat
+    return sum_net, vat, sum_gross
 
 
-def _replace_placeholders(doc: Document, mapping: Dict[str, str]) -> None:
+def _replace_placeholders(doc: DocxDocument, mapping: Dict[str, str]) -> None:
     """Replace placeholders in all paragraphs of the document."""
     for paragraph in doc.paragraphs:
         for run in paragraph.runs:
@@ -61,7 +62,7 @@ def _replace_placeholders(doc: Document, mapping: Dict[str, str]) -> None:
                                 run.text = run.text.replace(placeholder, value)
 
 
-def format_cell(cell, font_name="Calibri", font_size=9, bold=True):
+def _format_cell(cell, font_name="Calibri", font_size=9, bold=True):
     """Set font for all text in a table cell."""
     for paragraph in cell.paragraphs:
         for run in paragraph.runs:
@@ -70,19 +71,8 @@ def format_cell(cell, font_name="Calibri", font_size=9, bold=True):
             run.font.bold = bold
 
 
-def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
+def _fill_table(doc: DocxDocument, line_items: List[LineItem]) -> None:
     """Fill the main table in the document with data."""
-    # The table has 5 columns:
-    # "Pos", "Menge", "Beschreibung", "€/Stk", "Preis gesamt"
-    # The first row of the table is the header row with these titles
-    # Then we will have len(data) rows with the actual data
-    # data is a list of dicts with keys: "Menge", "Beschreibung", "€/Stk", "Preis gesamt"
-    # Each dict in data corresponds to one row in the table
-    # "Pos" is just a running number starting from 1
-    # "Menge" -> <Menge> (second column)
-    # "Beschreibung" -> <Beschreibung> (third column)
-    # "€/Stk" -> <€/Stk> (fourth column)
-    # "Preis gesamt" -> <Preis gesamt> (fifth column)
     if not doc.tables:
         logging.warning("No tables found in the document to fill.")
         return
@@ -90,34 +80,29 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
         if len(table.columns) == 5 and table.cell(0, 0).text == "Pos":
             target_table = table
 
-            # Fill the first data row (already present in template)
-            if data:
+            # Fill the first table row (already present in template)
+            if line_items:
                 # 1) Get the first table row
                 row = target_table.rows[1]
 
                 # 2) Fill cells
                 cells = row.cells
                 cells[0].text = str(1)
-                cells[1].text = format_duration(
-                    float(data[0].get("Menge", "")))
-                # Only take the part before the first " (" (if present)
-                description_full = str(data[0].get("Beschreibung", ""))
-                description_main = description_full.split(" (")[0]
-                cells[2].text = description_main
-                cells[3].text = format_price(float(data[0].get('€/Stk', 0)))
-                cells[4].text = format_price(
-                    float(data[0].get('Preis gesamt', 0)))
+                cells[1].text = _format_quantity(line_items[0].quantity)
+                cells[2].text = line_items[0].description
+                cells[3].text = _format_price(line_items[0].unit_price)
+                cells[4].text = _format_price(line_items[0].total_price)
 
                 # 3) Format all cells in this row
                 for cell in cells:
-                    format_cell(cell)
+                    _format_cell(cell)
 
                 # 4) Align last two columns to the right
                 cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
-            # For additional data rows, insert new rows
-            for pos, row_data in enumerate(data[1:], start=2):
+            # For additional line items, insert new rows
+            for pos, item in enumerate(line_items[1:], start=2):
                 # 1) Create a new row
                 tr = deepcopy(target_table.rows[1]._tr)
                 tbl = target_table._tbl
@@ -134,19 +119,14 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
                 # 5) Fill cells
                 cells = row.cells
                 cells[0].text = str(pos)
-                cells[1].text = format_duration(
-                    float(row_data.get("Menge", "")))
-                # Only take the part before the first " (" (if present)
-                description_full = str(row_data.get("Beschreibung", ""))
-                description_main = description_full.split(" (")[0]
-                cells[2].text = description_main
-                cells[3].text = format_price(float(row_data.get('€/Stk', 0)))
-                cells[4].text = format_price(
-                    float(row_data.get('Preis gesamt', 0)))
+                cells[1].text = _format_quantity(item.quantity)
+                cells[2].text = item.description
+                cells[3].text = _format_price(item.unit_price)
+                cells[4].text = _format_price(item.total_price)
 
                 # 6) Format all cells in this row
                 for cell in cells:
-                    format_cell(cell)
+                    _format_cell(cell)
 
                 # 7) Align last two columns to the right
                 cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -158,12 +138,14 @@ def _fill_table(doc: Document, data: List[Dict[str, str]]) -> None:
 
 def render_lieferschein_docx(
         project_number: str,
-        data: List[Dict[str, str | int | float]],
-        target_path: Path) -> None:
+        line_items: List[LineItem],
+        target_path: Path,
+        config: Config) -> None:
     """Fill the Word template with CSV data and save as Lieferschein DOCX."""
     try:
-        doc = Document(VORDRUCK_PATH)
-    except FileNotFoundError:
+        doc = Document(str(VORDRUCK_PATH))
+        logging.info(f"Using template: {VORDRUCK_PATH}")
+    except PackageNotFoundError:
         raise ValueError(f"Template not found: {VORDRUCK_PATH}")
 
     # Set up fixed placeholders
@@ -174,7 +156,7 @@ def render_lieferschein_docx(
     deliver_date = (date.today() + timedelta(days=21)).strftime("%d.%m.%Y")
 
     # Calculate sums and vat
-    sum_net, vat, sum_gross = _calculate_sums_and_vat(data)
+    sum_net, vat, sum_gross = _calculate_sums_and_vat(line_items, config)
 
     # Placeholder mappings
     mapping_liefer = {
@@ -185,23 +167,23 @@ def render_lieferschein_docx(
         "<Header>": header
     }
     mapping_sum = {
-        "<Summe>": format_price(sum_net),
-        "<Ust>": format_price(vat),
-        "<Gessumme>": format_price(sum_gross),
+        "<Summe>": _format_price(sum_net),
+        "<Ust>": _format_price(vat),
+        "<Gessumme>": _format_price(sum_gross),
         "<Datum heute + 21 Tage>": deliver_date,
     }
 
-    _fill_table(doc, data)
+    _fill_table(doc, line_items)
     _replace_placeholders(doc, mapping_sum)
 
     # Save intermediate document for Rechnung template use
     intermediate_path = get_intermediate_rechnung_path(project_number)
     intermediate_path.parent.mkdir(parents=True, exist_ok=True)
-    doc.save(intermediate_path)
+    doc.save(str(intermediate_path))
 
     _replace_placeholders(doc, mapping_liefer)
 
-    doc.save(target_path)
+    doc.save(str(target_path))
     logging.info(f"Generated Word document: {target_path}")
 
 
@@ -213,7 +195,12 @@ def render_rechnung_and_auftrag_docx(
 
     # Load the generated template for Rechnung and Auftragsbestätigung
     intermediate_path = get_intermediate_rechnung_path(project_number)
-    doc = Document(intermediate_path)
+    try:
+        doc = Document(str(intermediate_path))
+        logging.info(f"Using intermediate template: {intermediate_path}")
+    except PackageNotFoundError:
+        raise ValueError(
+            f"Intermediate template not found - generate Lieferschein first.")
     # Make two independent copies of the loaded document
     doc_rechnung = deepcopy(doc)
     doc_auftrag = deepcopy(doc)
@@ -244,12 +231,12 @@ def render_rechnung_and_auftrag_docx(
 
     # Replace placeholders for Rechnung
     _replace_placeholders(doc_rechnung, mapping_rechnung)
-    doc_rechnung.save(target_paths["rechnung"])
+    doc_rechnung.save(str(target_paths["rechnung"]))
     logging.info(f"Generated Word document: {target_paths["rechnung"]}")
 
     # Replace placeholders for Auftragsbestätigung
     _replace_placeholders(doc_auftrag, mapping_auftrag)
-    doc_auftrag.save(target_paths["auftrag"])
+    doc_auftrag.save(str(target_paths["auftrag"]))
     logging.info(f"Generated Word document: {target_paths["auftrag"]}")
 
 
@@ -306,11 +293,12 @@ def render_pdf(docx_path: Path) -> None:
 
 def render_lieferschein(
         project_number: str,
-        data: List[Dict[str, str | int | float]],
-        project_dir: Path) -> None:
+        line_items: List[LineItem],
+        project_dir: Path,
+        config: Config) -> None:
     """Render Lieferschein in DOCX and PDF format"""
     target_path = get_liefer_target_path(project_dir, project_number)
-    render_lieferschein_docx(project_number, data, target_path)
+    render_lieferschein_docx(project_number, line_items, target_path, config)
     render_pdf(target_path)
 
 
