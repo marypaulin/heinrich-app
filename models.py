@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Literal
+from typing import Literal, Optional
 
 
 @dataclass
@@ -24,3 +24,25 @@ class LineItem:
     description: str        # "Beschreibung"
     unit_price: float       # "€/Stk"
     total_price: float      # "Preis gesamt" = €/Stk * Menge
+
+
+@dataclass(frozen=True)
+class Totals:
+    sum_net: float
+    vat: float
+    sum_gross: float
+
+
+@dataclass(frozen=True)
+class DocMeta:
+    project_number: str
+    receipt_number: Optional[str]
+    doctype: str
+    header: str
+    date_today: date
+
+
+@dataclass(frozen=True)
+class IntermediateData:
+    totals: Totals
+    delivery_date: date

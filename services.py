@@ -9,10 +9,41 @@ from core.config import Config
 from docgen import (fill_table_with_line_items, load_intermediate_template,
                     load_template, replace_placeholders, save_docx)
 from formatting import format_price
-from models import LineItem
+from models import DocMeta, IntermediateData, LineItem
 from paths import (get_auftrag_target_path, get_intermediate_rechnung_path,
                    get_liefer_target_path, get_rechnung_target_path)
 from pdfgen import render_pdf
+
+PH_DATE_TODAY = "<Datum heute>"
+PH_PROJECT_NO = "<Lfd Nr.>"
+PH_RECEIPT_NO = "<Belegnr>"
+PH_DOCTYPE = "<Betreffart>"
+PH_HEADER = "<Header>"
+
+PH_SUM_NET = "<Summe>"
+PH_VAT = "<Ust>"
+PH_SUM_GROSS = "<Gessumme>"
+PH_DELIVERY_DATE = "<Datum heute + 21 Tage>"
+
+
+def build_meta_mapping(data: DocMeta, config: Config) -> Dict[str, str]:
+    return {
+        PH_DATE_TODAY: data.date_today.strftime(config.date_format),
+        PH_PROJECT_NO: data.project_number,
+        PH_RECEIPT_NO: data.receipt_number or "",
+        PH_DOCTYPE: data.doctype,
+        PH_HEADER: data.header,
+    }
+
+
+def build_intermediate_mapping(data: IntermediateData, config: Config) -> Dict[str, str]:
+    t = data.totals
+    return {
+        PH_SUM_NET: format_price(t.sum_net),
+        PH_VAT: format_price(t.vat),
+        PH_SUM_GROSS: format_price(t.sum_gross),
+        PH_DELIVERY_DATE: data.delivery_date.strftime(config.date_format),
+    }
 
 
 def render_lieferschein_docx(
@@ -21,90 +52,102 @@ def render_lieferschein_docx(
         target_path: Path,
         config: Config) -> None:
     """Fill the Word template with CSV data and save as Lieferschein DOCX."""
+
     doc = load_template()
+    doc_config = config.documents["LIEFERSCHEIN"]
 
-    # Set up fixed placeholders
-    current_date = date.today().strftime("%d.%m.%Y")
-    receipt_number = ""
-    doctype = "Lieferschein"
-    header = "Wir liefern folgende Positionen an:"
-    deliver_date = (date.today() + timedelta(days=21)).strftime("%d.%m.%Y")
+    # Set up meta data for Lieferschein
+    today = date.today()
 
-    # Calculate sums and vat
-    sum_net, vat, sum_gross = calculate_sums_and_vat(line_items, config)
+    meta_data = DocMeta(
+        project_number=project_number,
+        receipt_number=None,
+        doctype=doc_config.doctype,
+        header=doc_config.header,
+        date_today=today
+    )
 
-    # Placeholder mappings
-    mapping_liefer = {
-        "<Datum heute>": current_date,
-        "<Lfd Nr.>": project_number,
-        "<Belegnr>": receipt_number,
-        "<Betreffart>": doctype,
-        "<Header>": header
-    }
-    mapping_sum = {
-        "<Summe>": format_price(sum_net),
-        "<Ust>": format_price(vat),
-        "<Gessumme>": format_price(sum_gross),
-        "<Datum heute + 21 Tage>": deliver_date,
-    }
+    # Set up intermediate data
+    totals = calculate_sums_and_vat(line_items, config)
+    delivery_days = doc_config.delivery_days or 21
+    delivery_date = today + timedelta(days=delivery_days)
 
+    intermediate_data = IntermediateData(
+        totals=totals,
+        delivery_date=delivery_date
+    )
+
+    # Phase 1: Fill table with line items
     fill_table_with_line_items(doc, line_items)
-    replace_placeholders(doc, mapping_sum)
 
-    # Save intermediate document for Rechnung template use
+    # Phase 2: Fill intermediate placeholders + save intermediate template
+    replace_placeholders(
+        doc,
+        build_intermediate_mapping(intermediate_data, config)
+    )
+
     intermediate_path = get_intermediate_rechnung_path(project_number)
     intermediate_path.parent.mkdir(parents=True, exist_ok=True)
     save_docx(doc, intermediate_path)
 
-    replace_placeholders(doc, mapping_liefer)
+    # Phase 3: Fill Lieferschein placeholders + save final
+    replace_placeholders(
+        doc,
+        build_meta_mapping(meta_data, config)
+    )
 
     save_docx(doc, target_path)
+
     logging.info(f"Generated Lieferschein: {target_path}")
 
 
 def render_rechnung_and_auftrag_docx(
         project_number: str,
         receipt_number: str,
-        target_paths: Dict[str, Path]) -> None:
+        target_paths: Dict[str, Path],
+        config: Config) -> None:
     """Generate Rechnung and Auftragsbestaetigung DOCX from intermediate template."""
 
-    # Load the generated template for Rechnung and Auftragsbestätigung
     intermediate_path = get_intermediate_rechnung_path(project_number)
     doc = load_intermediate_template(intermediate_path)
-    # Make two independent copies of the loaded document
+
     doc_rechnung = deepcopy(doc)
     doc_auftrag = deepcopy(doc)
 
-    # Set up fixed placeholders
-    current_date = date.today().strftime("%d.%m.%Y")
-    doctype_rechnung = "Rechnung"
-    doctype_auftrag = "Auftragsbestätigung"
-    header_rechnung = "Wir bitten um Ausgleich der folgenden Positionen:"
-    header_auftrag = "Wir bestätigen den Auftrag über folgende Positionen:"
+    rechnung_config = config.documents["RECHNUNG"]
+    auftrag_config = config.documents["AUFTRAG"]
 
-    # Placeholder mappings
-    mapping_rechnung = {
-        "<Datum heute>": current_date,
-        "<Lfd Nr.>": project_number,
-        "<Belegnr>": receipt_number,
-        "<Betreffart>": doctype_rechnung,
-        "<Header>": header_rechnung
-    }
-    mapping_auftrag = {
-        "<Datum heute>": current_date,
-        "<Lfd Nr.>": project_number,
-        "<Belegnr>": receipt_number,
-        "<Betreffart>": doctype_auftrag,
-        "<Header>": header_auftrag
-    }
+    # Set up meta data for Rechnung and Auftragsbestätigung
+    today = date.today()
 
-    # Replace placeholders for Rechnung
-    replace_placeholders(doc_rechnung, mapping_rechnung)
+    meta_rechnung = DocMeta(
+        project_number=project_number,
+        receipt_number=receipt_number,
+        doctype=rechnung_config.doctype,
+        header=rechnung_config.header,
+        date_today=today
+    )
+    meta_auftrag = DocMeta(
+        project_number=project_number,
+        receipt_number=receipt_number,
+        doctype=auftrag_config.doctype,
+        header=auftrag_config.header,
+        date_today=today,
+    )
+
+    # Fill Rechnung placeholders + save
+    replace_placeholders(
+        doc_rechnung,
+        build_meta_mapping(meta_rechnung, config)
+    )
     save_docx(doc_rechnung, target_paths["rechnung"])
     logging.info(f"Generated Rechnung: {target_paths['rechnung']}")
 
-    # Replace placeholders for Auftragsbestätigung
-    replace_placeholders(doc_auftrag, mapping_auftrag)
+    # Fill Auftragsbestätigung placeholders + save
+    replace_placeholders(
+        doc_auftrag,
+        build_meta_mapping(meta_auftrag, config)
+    )
     save_docx(doc_auftrag, target_paths["auftrag"])
     logging.info(f"Generated Auftragsbestätigung: {target_paths['auftrag']}")
 
@@ -123,7 +166,8 @@ def render_lieferschein(
 def render_rechnung_and_auftrag(
         project_number: str,
         receipt_number: str,
-        project_dir: Path) -> None:
+        project_dir: Path,
+        config: Config) -> None:
     """Render Rechnung and Auftragsbestätigung in DOCX and PDF format"""
     target_paths = {
         "rechnung": get_rechnung_target_path(project_dir, project_number, receipt_number),
@@ -132,6 +176,7 @@ def render_rechnung_and_auftrag(
     render_rechnung_and_auftrag_docx(
         project_number,
         receipt_number,
-        target_paths)
+        target_paths,
+        config)
     render_pdf(target_paths["rechnung"])
     render_pdf(target_paths["auftrag"])

@@ -31,7 +31,8 @@ def main():
         render_rechnung_and_auftrag(
             args.project_number,
             args.receipt_number,
-            project_dir)
+            project_dir,
+            config)
     else:
         logging.error(f"Unknown mode: {args.mode}")
 

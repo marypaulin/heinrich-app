@@ -4,13 +4,21 @@ from pathlib import Path
 from typing import Dict
 
 
-@dataclass
+@dataclass(frozen=True)
+class DocumentConfig:
+    doctype: str
+    header: str
+    delivery_days: int | None = None
+
+
+@dataclass(frozen=True)
 class Config:
     data_root: Path
     hourly_rate_mapping: Dict[float, str]
     hourly_rate_default: str
     date_format: str
     vat_rate: float
+    documents: Dict[str, DocumentConfig]
 
 
 def load_config(path: Path) -> Config:
@@ -33,10 +41,20 @@ def load_config(path: Path) -> Config:
     date_format = raw["DATE_FORMAT"]
     vat_rate = float(raw["VAT_RATE"])
 
+    documents_raw = raw["DOCUMENTS"]
+    documents = {}
+    for key, value in documents_raw.items():
+        documents[key] = DocumentConfig(
+            doctype=value["DOCTYPE"],
+            header=value["HEADER"],
+            delivery_days=value.get("DELIVERY_DAYS")
+        )
+
     return Config(
         data_root=data_root,
         hourly_rate_mapping=mapping_converted,
         hourly_rate_default=default_description,
         date_format=date_format,
-        vat_rate=vat_rate
+        vat_rate=vat_rate,
+        documents=documents
     )

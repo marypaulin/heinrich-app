@@ -38,7 +38,9 @@ def load_intermediate_template(path: Path) -> DocxDocument:
 
 
 def replace_placeholders(doc: DocxDocument, mapping: Dict[str, str]) -> None:
-    """Replace placeholders in all paragraphs of the document."""
+    """Replace placeholders in all paragraphs of the document.
+
+    Note: This function is generic."""
     for paragraph in doc.paragraphs:
         for run in paragraph.runs:
             for placeholder, value in mapping.items():
@@ -64,7 +66,9 @@ def _format_cell(cell, font_name="Calibri", font_size=9, bold=True):
 
 
 def fill_table_with_line_items(doc: DocxDocument, line_items: List[LineItem]) -> None:
-    """Fill the main table in the document with data."""
+    """Fill the main table in the document with data.
+
+    Note: This function is business-logic-specific."""
     if not doc.tables:
         logging.warning("No tables found in the document to fill.")
         return
