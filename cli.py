@@ -7,7 +7,7 @@ import sys
 from cli_args_parser import parse_cli_args
 from core.config import load_config
 from csv_loader import load_csv_data
-from data_transformer import csv_rows_to_line_items
+from csv_transformer import csv_rows_to_line_items
 from docgen import render_lieferschein, render_rechnung_and_auftrag
 from paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
 
