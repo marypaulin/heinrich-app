@@ -104,3 +104,33 @@ python cli.py 1235 rechnung 4504049161
 * Web-Oberfläche mit denselben Workflows wie die CLI
 * UI-basierte Erfassung von Positionen und Erzeugung von Angeboten
 * Generierung von E-Rechnungen (z. B. XRechnung / ZUGFeRD)
+
+---
+
+## Test Cases
+
+Project numbers:
+
+- 1218
+- 1223
+- 1235
+- 1236
+- 1253
+
+```
+python cli.py 1218 liefer
+python cli.py 1218 rechnung 4504020708
+
+python cli.py 1223 liefer
+python cli.py 1223 rechnung 4504030989
+
+python cli.py 1235 liefer
+python cli.py 1235 rechnung 4504049161
+
+python cli.py 1236 liefer
+python cli.py 1236 rechnung 4504059903
+
+python cli.py 1253 liefer
+python cli.py 1253 rechnung 4504072524
+
+```

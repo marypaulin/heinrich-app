@@ -2,16 +2,12 @@
 Word and PDF document generation for heinrich-metallbau.
 """
 import logging
-import platform
-import shutil
-import subprocess
 from copy import deepcopy
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple
 
 from docx import Document
-from docx2pdf import convert
 from docx.document import Document as DocxDocument
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.opc.exceptions import PackageNotFoundError
@@ -20,9 +16,7 @@ from docx.table import _Row
 
 from core.config import Config
 from models import LineItem
-from paths import (VORDRUCK_PATH, get_auftrag_target_path,
-                   get_intermediate_rechnung_path, get_liefer_target_path,
-                   get_rechnung_target_path)
+from paths import VORDRUCK_PATH, get_intermediate_rechnung_path
 
 
 def _format_quantity(value: float) -> str:
@@ -238,82 +232,3 @@ def render_rechnung_and_auftrag_docx(
     _replace_placeholders(doc_auftrag, mapping_auftrag)
     doc_auftrag.save(str(target_paths["auftrag"]))
     logging.info(f"Generated Word document: {target_paths["auftrag"]}")
-
-
-def render_pdf(docx_path: Path) -> None:
-    """Convert DOCX file to PDF using Word on Windows or LibreOffice on Linux."""
-
-    # Derive output PDF path from the DOCX path
-    pdf_path = docx_path.with_suffix(".pdf")
-    system = platform.system()
-
-    if system == "Windows":
-        # Use Microsoft Word via docx2pdf for perfect formatting
-        try:
-            convert(str(docx_path), str(pdf_path))
-            logging.info(f"Generated PDF document via Word: {pdf_path}")
-            return
-        except Exception as e:
-            logging.error(f"Word-based PDF conversion failed: {e}")
-            return
-
-    elif system == "Linux":
-        # Use LibreOffice headless mode as fallback
-        soffice = shutil.which("soffice") or shutil.which("libreoffice")
-        if soffice:
-            try:
-                subprocess.run(
-                    [
-                        soffice,
-                        "--headless",
-                        "--nologo",
-                        "--nodefault",
-                        "--nofirststartwizard",
-                        "--convert-to", "pdf",
-                        "--outdir", str(pdf_path.parent),
-                        str(docx_path)],
-                    check=True,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-                logging.info(
-                    f"Generated PDF document via LibreOffice: {pdf_path}")
-                return
-            except subprocess.CalledProcessError as e:
-                logging.error(f"LibreOffice PDF conversion failed: {e}")
-                return
-
-    # If no supported system or conversion failed
-    logging.error(
-        "PDF generation not supported. "
-        "Please install Microsoft Word (on Windows) or LibreOffice (on Linux)."
-    )
-
-
-def render_lieferschein(
-        project_number: str,
-        line_items: List[LineItem],
-        project_dir: Path,
-        config: Config) -> None:
-    """Render Lieferschein in DOCX and PDF format"""
-    target_path = get_liefer_target_path(project_dir, project_number)
-    render_lieferschein_docx(project_number, line_items, target_path, config)
-    render_pdf(target_path)
-
-
-def render_rechnung_and_auftrag(
-        project_number: str,
-        receipt_number: str,
-        project_dir: Path) -> None:
-    """Render Rechnung and Auftragsbestätigung in DOCX and PDF format"""
-    target_paths = {
-        "rechnung": get_rechnung_target_path(project_dir, project_number, receipt_number),
-        "auftrag": get_auftrag_target_path(project_dir, project_number, receipt_number)
-    }
-    render_rechnung_and_auftrag_docx(
-        project_number,
-        receipt_number,
-        target_paths)
-    render_pdf(target_paths["rechnung"])
-    render_pdf(target_paths["auftrag"])
