@@ -4,7 +4,7 @@ Path and file discovery utilities for heinrich-tool.
 import logging
 from pathlib import Path
 
-HEINRICH_ROOT = Path(__file__).resolve().parent
+HEINRICH_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = HEINRICH_ROOT / "config.json"
 
 CSV_NAME_RE = "heinrich_zeiterfassung_*.csv"

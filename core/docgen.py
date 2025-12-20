@@ -13,9 +13,9 @@ from docx.opc.exceptions import PackageNotFoundError
 from docx.shared import Pt
 from docx.table import _Row
 
-from formatting import format_price, format_quantity
-from models import LineItem
-from paths import VORDRUCK_PATH
+from .formatting import format_price, format_quantity
+from .models import LineItem
+from .paths import VORDRUCK_PATH
 
 
 def load_template() -> DocxDocument:

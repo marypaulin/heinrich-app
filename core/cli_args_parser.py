@@ -4,7 +4,7 @@ CLI Argument parsing and validation for heinrich-metallbau CLI.
 import argparse
 from typing import Iterable
 
-from input_args import InputArgs, create_liefer_args, create_rechnung_args
+from .input_args import InputArgs, create_liefer_args, create_rechnung_args
 
 
 def parse_cli_args(argv: Iterable[str] | None = None) -> InputArgs:

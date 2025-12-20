@@ -4,12 +4,12 @@ heinrich-metallbau CLI utility
 import logging
 import sys
 
-from cli_args_parser import parse_cli_args
+from core.cli_args_parser import parse_cli_args
 from core.config import load_config
-from csv_loader import load_csv_data
-from csv_transformer import csv_rows_to_line_items
-from paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
-from services import render_lieferschein, render_rechnung_and_auftrag
+from core.csv_loader import load_csv_data
+from core.csv_transformer import csv_rows_to_line_items
+from core.paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
+from core.services import render_lieferschein, render_rechnung_and_auftrag
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 

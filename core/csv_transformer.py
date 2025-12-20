@@ -1,9 +1,8 @@
 import logging
 from typing import Iterable, List
 
-from core.config import Config
-from csv_loader import CsvRow
-from models import LineItem
+from .config import Config
+from .models import CsvRow, LineItem
 
 
 def _get_hourly_description(hourly_rate: float, config: Config) -> str:
@@ -56,7 +55,8 @@ def csv_rows_to_line_items(csv_rows: Iterable[CsvRow], config: Config) -> List[L
         order_number = csv_row.order_number
         if not order_number.isdigit() or len(order_number) != 8:
             logging.info(
-                f"Skipping csv_row {csv_row.row_number} with invalid Auftrags-Nr.: {order_number}")
+                f"Skipping csv_row {csv_row.row_number} "
+                f"with invalid Auftrags-Nr.: {order_number}")
             continue
 
         # Arbeitsstunden

@@ -6,8 +6,8 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import List
 
-from core.config import Config
-from models import CsvRow
+from .config import Config
+from .models import CsvRow
 
 CSV_COL_DATE = "Datum"
 CSV_COL_ORDER_NUMBER = "Auftrags-Nr."

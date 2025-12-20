@@ -1,7 +1,7 @@
 from typing import List
 
-from core.config import Config
-from models import LineItem, Totals
+from .config import Config
+from .models import LineItem, Totals
 
 
 def calculate_sums_and_vat(items: List[LineItem], config: Config) -> Totals:
