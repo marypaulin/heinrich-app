@@ -20,7 +20,7 @@ def main():
     project_dir = get_project_dir(config.data_root, args.project_number)
 
     if args.mode == 'liefer':
-        csv_path = get_latest_csv_path(project_dir)
+        csv_path = get_latest_csv_path(project_dir, config)
         csv_rows = load_csv_data(csv_path, config)
         line_items = csv_rows_to_line_items(csv_rows, config)
         render_lieferschein(args.project_number,

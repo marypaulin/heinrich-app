@@ -19,6 +19,7 @@ class Config:
     date_format: str
     vat_rate: float
     documents: Dict[str, DocumentConfig]
+    filenames: Dict[str, str]
 
 
 def load_config(path: Path) -> Config:
@@ -50,11 +51,14 @@ def load_config(path: Path) -> Config:
             delivery_days=value.get("DELIVERY_DAYS")
         )
 
+    filenames = raw["FILENAMES"]
+
     return Config(
         data_root=data_root,
         hourly_rate_mapping=mapping_converted,
         hourly_rate_default=default_description,
         date_format=date_format,
         vat_rate=vat_rate,
-        documents=documents
+        documents=documents,
+        filenames=filenames
     )

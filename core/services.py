@@ -158,7 +158,7 @@ def render_lieferschein(
         project_dir: Path,
         config: Config) -> None:
     """Render Lieferschein in DOCX and PDF format"""
-    target_path = get_liefer_target_path(project_dir, project_number)
+    target_path = get_liefer_target_path(project_dir, project_number, config)
     render_lieferschein_docx(project_number, line_items, target_path, config)
     render_pdf(target_path)
 
@@ -169,14 +169,26 @@ def render_rechnung_and_auftrag(
         project_dir: Path,
         config: Config) -> None:
     """Render Rechnung and Auftragsbestätigung in DOCX and PDF format"""
+    rechnung_path = get_rechnung_target_path(
+        project_dir,
+        project_number,
+        receipt_number,
+        config
+    )
+    auftrag_path = get_auftrag_target_path(
+        project_dir,
+        project_number,
+        receipt_number,
+        config
+    )
     target_paths = {
-        "rechnung": get_rechnung_target_path(project_dir, project_number, receipt_number),
-        "auftrag": get_auftrag_target_path(project_dir, project_number, receipt_number)
+        "rechnung": rechnung_path,
+        "auftrag": auftrag_path
     }
     render_rechnung_and_auftrag_docx(
         project_number,
         receipt_number,
         target_paths,
         config)
-    render_pdf(target_paths["rechnung"])
-    render_pdf(target_paths["auftrag"])
+    render_pdf(rechnung_path)
+    render_pdf(auftrag_path)
