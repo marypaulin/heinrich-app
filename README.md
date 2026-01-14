@@ -2,8 +2,6 @@
 
 Dieses Programm unterstützt die Erstellung von **Lieferscheinen**, **Auftragsbestätigungen** und **Rechnungen** aus den Zeiterfassungsdaten von Heinrich Metallbau.
 
-Aktuell handelt es sich um ein Python-Programm, das über die Kommandozeile ausgeführt wird. Die bestehenden Workflows sind so aufgebaut, dass sie später direkt als Web-Endpunkte genutzt werden können.
-
 ---
 
 ## Voraussetzungen
@@ -81,7 +79,7 @@ Zentral ist ein **zweistufiger Prozess**:
 
 ## Nutzung als CLI-Tool
 
-Das Programm wird im Projektordner über die Kommandozeile gestartet.
+Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestartet.
 
 ### Lieferschein erzeugen
 
@@ -101,7 +99,7 @@ python cli.py 1235 rechnung 4504049161
 
 ## Geplante Erweiterungen (Ausblick)
 
-* Web-Oberfläche mit denselben Workflows wie die CLI
+* Web-Oberfläche mit denselben Workflows wie das CLI
 * UI-basierte Erfassung von Positionen und Erzeugung von Angeboten
 * Generierung von E-Rechnungen (z. B. XRechnung / ZUGFeRD)
 
