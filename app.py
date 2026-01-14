@@ -18,8 +18,8 @@ with col2:
 st.title("Heinrich App")
 
 st.markdown("Erstelle **Lieferscheine**, **Auftragsbestätigungen** und "
-            "**Rechnungen** direkt aus deinen Zeiterfassungsdaten"
-            "- sauber formatiert und mit nur wenigen Klicks 📄")
+            "**Rechnungen** direkt aus deinen Zeiterfassungsdaten - "
+            "sauber formatiert und mit nur wenigen Klicks 📄")
 
 # ---------------- Lieferschein ----------------
 st.subheader("Lieferschein")
