@@ -13,7 +13,7 @@ st.markdown(
 
 col1, _, col2 = st.columns(3)
 with col2:
-    st.image("logo.png")
+    st.image("assets/logo.png")
 
 st.title("Heinrich App")
 

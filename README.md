@@ -6,10 +6,51 @@ Dieses Programm unterstützt die Erstellung von **Lieferscheinen**, **Auftragsbe
 
 ## Voraussetzungen
 
-* Installiertes **Python 3.12** (oder neuer)
-* Abhängigkeiten installiert mit
-  `pip install -r requirements`
-* Ein vorhandenes **Projektverzeichnis** unter `/Pfad/zu/RHI/`
+* Installiertes **Python 3.12** oder neuer
+  (prüfbar in der Kommandozeile mit `python --version`)
+* Installierte Abhängigkeiten: `pip install -r requirements.txt`
+* Ein vorhandenes **Projektverzeichnis** mit den Projektordnern (`/Pfad/zu/RHI/`)
+* Korrekt gesetzter Pfad in der Konfigurationsdatei: `"DATA_ROOT": "/Pfad/zu/RHI/"`
+
+---
+
+## Nutzung als App (Windows)
+
+Das Heinrich Tool kann unter Windows als lokale Web-App genutzt werden, die per Doppelklick gestartet wird.
+
+### Einrichtung
+
+1. Erstelle eine **Desktopverknüpfung** der Datei `scripts/app_windows.vbs`
+2. Rechtsklick auf die Verknüpfung → **Eigenschaften**
+3. Reiter **Verknüpfung** → **Anderes Symbol…**
+4. Wähle die Datei `assets/icon.ico`
+5. Fertig
+
+### Nutzung
+
+* Ein Doppelklick auf die Desktopverknüpfung startet die Heinrich App.
+* Die App öffnet sich automatisch im Standardbrowser.
+* Ist die App bereits geöffnet, wird lediglich ein weiterer Browser-Tab geöffnet.
+
+---
+
+## Nutzung als CLI-Tool
+
+Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestartet.
+
+### Lieferschein erzeugen
+
+```
+python cli.py 1235 liefer
+```
+
+---
+
+### Rechnung & Auftragsbestätigung erzeugen
+
+```
+python cli.py 1235 rechnung 4504049161
+```
 
 ---
 
@@ -20,7 +61,7 @@ Das Tool arbeitet mit klar getrennten Modi. Jeder Modus entspricht einem eigenen
 Zentral ist ein **zweistufiger Prozess**:
 
 1. Erzeugung eines Lieferscheins inklusive Tabellenbefüllung und Berechnung
-2. Ableitung weiterer Dokumente (Rechnung, Auftragsbestätigung) aus einem gespeicherten Zwischenstand
+2. Ableitung von Rechnung und Auftragsbestätigung aus einem gespeicherten Zwischenstand
 
 ---
 
@@ -74,26 +115,6 @@ Zentral ist ein **zweistufiger Prozess**:
 * `Rechnung Nr. <project_number> - <receipt_number>.pdf`
 * `Auftragsbestätigung Nr. <project_number> - <receipt_number>.docx`
 * `Auftragsbestätigung Nr. <project_number> - <receipt_number>.pdf`
-
----
-
-## Nutzung als CLI-Tool
-
-Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestartet.
-
-### Lieferschein erzeugen
-
-```
-python cli.py 1235 liefer
-```
-
----
-
-### Rechnung & Auftragsbestätigung erzeugen
-
-```
-python cli.py 1235 rechnung 4504049161
-```
 
 ---
 
