@@ -1,0 +1,16 @@
+import streamlit as st
+
+from core.config import Config, load_config
+from core.paths import CONFIG_PATH
+
+
+def get_config() -> Config:
+    return st.session_state.setdefault("config", load_config(CONFIG_PATH))
+
+
+def initialize_session_state() -> None:
+    # Session state for UI messages (Lieferschein)
+    if "liefer_info" not in st.session_state:
+        st.session_state.liefer_info = []
+    if "liefer_error" not in st.session_state:
+        st.session_state.liefer_error = None

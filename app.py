@@ -1,11 +1,17 @@
 import streamlit as st
 
-from core.config import load_config
 from core.csv_loader import load_csv_data
 from core.csv_transformer import csv_rows_to_line_items
 from core.input_args import create_liefer_args, create_rechnung_args
 from core.paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
 from core.services import render_lieferschein, render_rechnung_and_auftrag
+from state import get_config, initialize_session_state
+
+st.set_page_config(
+    page_title="Heinrich App",
+    page_icon="assets/icon.ico",
+    layout="centered"
+)
 
 
 def suppress_round_corners():
@@ -21,16 +27,60 @@ def suppress_round_corners():
     )
 
 
-@st.cache_data
-def get_config():
-    return load_config(CONFIG_PATH)
+def run_lieferschein(config):
+    # Reset log messages each time
+    st.session_state.liefer_info = []
+    st.session_state.liefer_error = None
+
+    project_number_liefer = st.session_state.get(
+        "project_number_liefer", "").strip()
+
+    # Catch error if button is clicked without project number
+    if not project_number_liefer:
+        st.session_state.liefer_info.append(
+            "Bitte eine Projektnummer eingeben."
+        )
+        return
+
+    try:
+        # Find project dir, read csv and render lieferschein
+        args = create_liefer_args(project_number_liefer)
+        project_dir = get_project_dir(
+            config.data_root, args.project_number)
+        st.session_state.liefer_info.append(
+            f"Projektordner gefunden: {project_dir.name}")
+        csv_path = get_latest_csv_path(project_dir, config)
+        st.session_state.liefer_info.append(
+            f"CSV Datei gefunden: {csv_path.name}")
+        csv_rows = load_csv_data(csv_path, config)
+        line_items = csv_rows_to_line_items(csv_rows, config)
+        render_lieferschein(
+            args.project_number,
+            line_items,
+            project_dir,
+            config
+        )
+
+        # Dummy info (later from backend)
+        st.session_state.liefer_info.extend([
+            "Achtung: Zeile 2 übersprungen wegen ungültiger Auftragsnummer 123",
+            "Achtung: Unbekannter Stundenlohn 60.00 in Zeile 3 - nehme 'Meisterstunde'"
+        ]
+        )
+        st.session_state.liefer_info.append(
+            f"Lieferschein erfolgreich erstellt: {project_dir.name}/Lieferschein XXXX.pdf")
+
+        st.toast("Lieferschein erzeugt", icon="✅")
+
+    except Exception as e:
+        st.session_state.liefer_error = str(e)
+        st.toast("Fehler beim Erzeugen", icon="❌")
 
 
 def app():
     suppress_round_corners()
     config = get_config()
-
-    # TODO Modularisierung + Logging/Feedback
+    initialize_session_state()
 
     # Logo
     col1, _, col2 = st.columns(3)
@@ -40,9 +90,11 @@ def app():
     # Title
     st.title("Heinrich App")
 
-    st.markdown("Erstelle **Lieferscheine**, **Auftragsbestätigungen** und "
-                "**Rechnungen** direkt aus deinen Zeiterfassungsdaten - "
-                "sauber formatiert, mit nur wenigen Klicks 📄")
+    st.markdown(
+        "Erstelle **Lieferscheine**, **Auftragsbestätigungen** und "
+        "**Rechnungen** direkt aus deinen Zeiterfassungsdaten - "
+        "sauber formatiert, mit nur wenigen Klicks 📄"
+    )
 
     # Lieferschein
     st.subheader("Lieferschein")
@@ -51,22 +103,27 @@ def app():
         col1, _ = st.columns(2)
 
         with col1:
-            project_number_liefer = st.text_input(
-                "Bitte Projektnummer eingeben"
+            st.text_input(
+                "Bitte Projektnummer eingeben",
+                key="project_number_liefer",
+                placeholder="zB 1235"
             )
-        submit_liefer = st.form_submit_button("Lieferschein erzeugen")
 
-    if submit_liefer:
-        st.write(f"Sie haben gewählt: {project_number_liefer}")
-        args = create_liefer_args(project_number_liefer)
-        project_dir = get_project_dir(config.data_root, args.project_number)
-        csv_path = get_latest_csv_path(project_dir, config)
-        csv_rows = load_csv_data(csv_path, config)
-        line_items = csv_rows_to_line_items(csv_rows, config)
-        render_lieferschein(args.project_number,
-                            line_items,
-                            project_dir,
-                            config)
+        st.form_submit_button(
+            "Lieferschein erzeugen",
+            on_click=run_lieferschein,
+            args=(config,)
+        )
+
+        # Display log messages under submit button
+        if st.session_state.liefer_info:
+            st.code(
+                "\n".join(st.session_state.liefer_info),
+                language="text"
+            )
+
+        if st.session_state.liefer_error:
+            st.error(st.session_state.liefer_error)
 
     # Rechnung / Auftragsbestätigung
     st.subheader("Rechnung / Auftragsbestätigung")
@@ -93,12 +150,14 @@ def app():
             f"Sie haben gewählt: {project_number_rechnung} und {receipt_number}"
         )
         args = create_rechnung_args(project_number_rechnung, receipt_number)
-        project_dir = get_project_dir(config.data_root, args.project_number)
+        project_dir = get_project_dir(
+            config.data_root, args.project_number)
         render_rechnung_and_auftrag(
             args.project_number,
             args.receipt_number,
             project_dir,
-            config)
+            config
+        )
 
 
 if __name__ == "__main__":
