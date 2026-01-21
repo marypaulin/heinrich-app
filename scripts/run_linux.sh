@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 cd "$PROJECT_DIR"
 
-PORT=8501
+PORT=8502
 URL="http://localhost:${PORT}"
 
 # Wenn schon ein Streamlit-Server läuft: nur Browser öffnen und fertig

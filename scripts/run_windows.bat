@@ -4,7 +4,7 @@ setlocal EnableExtensions EnableDelayedExpansion
 REM Jump to project root (parent of this scripts/ folder)
 cd /d "%~dp0\.."
 
-set PORT=8501
+set PORT=8502
 set URL=http://localhost:%PORT%
 
 REM Check if port is already listening
