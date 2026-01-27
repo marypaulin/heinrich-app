@@ -102,7 +102,7 @@ def render_lieferschein_docx(
 
     save_docx(doc, target_path)
 
-    display_path = get_display_path(target_path)
+    display_path = target_path.name
     logging.info(f"Generated Lieferschein: {display_path}")
     messages.info(f"Lieferschein erzeugt: {display_path}")
 
@@ -149,7 +149,7 @@ def render_rechnung_and_auftrag_docx(
         build_meta_mapping(meta_rechnung, config),
     )
     save_docx(doc_rechnung, target_paths["rechnung"])
-    display_path = get_display_path(target_paths["rechnung"])
+    display_path = target_paths["rechnung"].name
     logging.info(f"Generated Rechnung: {display_path}")
     messages.info(f"Rechnung erzeugt: {display_path}")
 
@@ -159,7 +159,7 @@ def render_rechnung_and_auftrag_docx(
         build_meta_mapping(meta_auftrag, config),
     )
     save_docx(doc_auftrag, target_paths["auftrag"])
-    display_path = get_display_path(target_paths["auftrag"])
+    display_path = target_paths["auftrag"].name
     logging.info(f"Generated Auftragsbestätigung: {display_path}")
     messages.info(f"Auftragsbestätigung erzeugt: {display_path}")
 

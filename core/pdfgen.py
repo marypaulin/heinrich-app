@@ -21,7 +21,7 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
         # Use Microsoft Word via docx2pdf for perfect formatting
         try:
             convert(str(docx_path), str(pdf_path))
-            display_path = get_display_path(pdf_path)
+            display_path = pdf_path.name
             logging.info(f"Generated PDF document via Word: {display_path}")
             messages.info(f"PDF erzeugt: {display_path}")
             return
@@ -50,7 +50,7 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
-                display_path = get_display_path(pdf_path)
+                display_path = pdf_path.name
                 logging.info(
                     f"Generated PDF document via LibreOffice: {display_path}")
                 messages.info(f"PDF erzeugt: {display_path}")

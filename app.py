@@ -68,6 +68,45 @@ def run_lieferschein(config):
         st.toast("Fehler beim Erzeugen", icon="❌")
 
 
+def run_rechnung(config):
+    # Reset log messages each time
+    st.session_state.rechnung_info = []
+    st.session_state.rechnung_error = []
+
+    project_number_rechnung = st.session_state.get(
+        "project_number_rechnung", "").strip()
+    receipt_number = st.session_state.get(
+        "receipt_number", "").strip()
+
+    # Catch error if button is clicked without numbers
+    if not project_number_rechnung or not receipt_number:
+        st.session_state.liefer_info.append(
+            "Bitte Projekt- und Belegnummer eingeben."
+        )
+        return
+
+    try:
+        # Find project dir and render rechnung and auftragsbestätigung
+        # Log messages from backend for each step
+        args = create_rechnung_args(project_number_rechnung, receipt_number)
+        project_dir, messages = get_project_dir(
+            config.data_root,
+            args.project_number,
+        )
+        st.session_state.rechnung_info.extend(messages)
+        messages = render_rechnung_and_auftrag(
+            args.project_number,
+            args.receipt_number,
+            project_dir,
+            config,
+        )
+        st.session_state.rechnung_info.extend(messages)
+        st.toast("Rechnung und Auftragsbestätigung erzeugt", icon="✅")
+
+    except Exception as e:
+        st.session_state.rechnung_error = f"Error: {str(e)}"
+        st.toast("Fehler beim Erzeugen", icon="❌")
+
 def app():
     suppress_round_corners()
     config = get_config()
@@ -123,34 +162,34 @@ def app():
         col1, col2 = st.columns(2)
 
         with col1:
-            project_number_rechnung = st.text_input(
-                "Bitte Projektnummer eingeben"
+            st.text_input(
+                "Bitte Projektnummer eingeben",
+                key="project_number_rechnung",
+                placeholder="zB 1235",
             )
 
         with col2:
-            receipt_number = st.text_input(
-                "Bitte Belegnummer eingeben"
+            st.text_input(
+                "Bitte Belegnummer eingeben",
+                key="receipt_number",
+                placeholder="zB 4504049161"
             )
 
-        submit_rechnung = st.form_submit_button(
-            "Rechnung und Auftragsbestätigung erzeugen"
+        st.form_submit_button(
+            "Rechnung und Auftragsbestätigung erzeugen",
+            on_click=run_rechnung,
+            args=(config,)
         )
 
-    if submit_rechnung:
-        st.write(
-            f"Sie haben gewählt: {project_number_rechnung} und {receipt_number}"
-        )
-        args = create_rechnung_args(project_number_rechnung, receipt_number)
-        project_dir, messages = get_project_dir(
-            config.data_root,
-            args.project_number,
-        )
-        messages = render_rechnung_and_auftrag(
-            args.project_number,
-            args.receipt_number,
-            project_dir,
-            config,
-        )
+        # Display log messages under submit button
+        if st.session_state.rechnung_info:
+            st.code(
+                "\n".join(st.session_state.rechnung_info),
+                language="text",
+            )
+
+        if st.session_state.rechnung_error:
+            st.error(st.session_state.rechnung_error)
 
 
 if __name__ == "__main__":
