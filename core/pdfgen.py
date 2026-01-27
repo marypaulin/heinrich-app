@@ -6,8 +6,11 @@ from pathlib import Path
 
 from docx2pdf import convert
 
+from .messages import Messages
+from .paths import get_display_path
 
-def render_pdf(docx_path: Path) -> None:
+
+def render_pdf(docx_path: Path, messages: Messages) -> None:
     """Convert DOCX file to PDF using Word on Windows or LibreOffice on Linux."""
 
     # Derive output PDF path from the DOCX path
@@ -18,7 +21,9 @@ def render_pdf(docx_path: Path) -> None:
         # Use Microsoft Word via docx2pdf for perfect formatting
         try:
             convert(str(docx_path), str(pdf_path))
-            logging.info(f"Generated PDF document via Word: {pdf_path}")
+            display_path = get_display_path(pdf_path)
+            logging.info(f"Generated PDF document via Word: {display_path}")
+            messages.info(f"PDF erzeugt: {display_path}")
             return
         except Exception as e:
             logging.error(f"Word-based PDF conversion failed: {e}")
@@ -38,14 +43,17 @@ def render_pdf(docx_path: Path) -> None:
                         "--nofirststartwizard",
                         "--convert-to", "pdf",
                         "--outdir", str(pdf_path.parent),
-                        str(docx_path)],
+                        str(docx_path),
+                    ],
                     check=True,
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
+                display_path = get_display_path(pdf_path)
                 logging.info(
-                    f"Generated PDF document via LibreOffice: {pdf_path}")
+                    f"Generated PDF document via LibreOffice: {display_path}")
+                messages.info(f"PDF erzeugt: {display_path}")
                 return
             except subprocess.CalledProcessError as e:
                 logging.error(f"LibreOffice PDF conversion failed: {e}")

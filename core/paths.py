@@ -4,6 +4,8 @@ Path and file discovery utilities for heinrich-tool.
 import logging
 from pathlib import Path
 
+from core.messages import Messages
+
 from .config import Config
 
 HEINRICH_ROOT = Path(__file__).resolve().parent.parent
@@ -23,28 +25,34 @@ def _format_filename(template: str, **values: str) -> str:
     except KeyError as e:
         missing = e.args[0]
         raise ValueError(
-            f"Missing placeholder '{missing}' in filename template"
+            f"Missing placeholder '{missing}' in config filename template"
         ) from e
 
 
-def get_project_dir(data_root: Path, project_number: str) -> Path:
+def get_project_dir(data_root: Path, project_number: str) -> tuple[Path, list[str]]:
     """Find the folder with the given 4-digit project number as prefix."""
+    messages = Messages()
     for folder in data_root.iterdir():
         if folder.is_dir() and folder.name.startswith(f"{project_number} "):
-            logging.info(f"Found project folder: {folder}")
-            return folder
+            display_folder = get_display_path(folder)
+            logging.info(f"Found project folder: {display_folder}")
+            messages.info(f"Projektordner gefunden: {display_folder}")
+            return folder, messages.items
     raise FileNotFoundError(
         f"No folder found for project number {project_number}")
 
 
-def get_latest_csv_path(project_dir: Path, config: Config) -> Path:
+def get_latest_csv_path(project_dir: Path, config: Config) -> tuple[Path, list[str]]:
     """Find the latest CSV file in the order folder."""
+    messages = Messages()
     csv_files = sorted(project_dir.glob(config.filenames["CSV_NAME_RE"]))
     if not csv_files:
         raise FileNotFoundError(f"No CSV files found in {project_dir}")
     latest = max(csv_files, key=lambda p: p.stat().st_mtime)
-    logging.info(f"Using CSV file: {latest}")
-    return latest
+    display_latest = latest.name
+    logging.info(f"Using CSV file: {display_latest}")
+    messages.info(f"CSV Datei gefunden: {display_latest}")
+    return latest, messages.items
 
 
 def get_intermediate_project_dir(project_number: str) -> Path:
@@ -57,53 +65,66 @@ def get_intermediate_rechnung_path(project_number: str) -> Path:
     """templates/intermediate/<project_number>/Vordruck_Rechnung_<project_number>.docx"""
     filename = _format_filename(
         INTERMEDIATE_FILENAME,
-        project_number=project_number
+        project_number=project_number,
     )
     path = get_intermediate_project_dir(project_number) / filename
     return path
 
 
 def get_liefer_target_path(
-        project_dir: Path,
-        project_number: str,
-        config: Config) -> Path:
+    project_dir: Path,
+    project_number: str,
+    config: Config,
+) -> Path:
     """Create filepath for Lieferschein using filename template from config"""
     template = config.filenames["LIEFERSCHEIN"]
     filename = _format_filename(
         template,
-        project_number=project_number
+        project_number=project_number,
     )
     path = project_dir / filename
     return path
 
 
 def get_rechnung_target_path(
-        project_dir: Path,
-        project_number: str,
-        receipt_number: str,
-        config: Config) -> Path:
+    project_dir: Path,
+    project_number: str,
+    receipt_number: str,
+    config: Config,
+) -> Path:
     """Create filepath for Rechnung using filename template from config"""
     template = config.filenames["RECHNUNG"]
     filename = _format_filename(
         template,
         project_number=project_number,
-        receipt_number=receipt_number
+        receipt_number=receipt_number,
     )
     path = project_dir / filename
     return path
 
 
 def get_auftrag_target_path(
-        project_dir: Path,
-        project_number: str,
-        receipt_number: str,
-        config: Config) -> Path:
+    project_dir: Path,
+    project_number: str,
+    receipt_number: str,
+    config: Config,
+) -> Path:
     """Create filepath for Auftragsbestätigung using filename template from config"""
     template = config.filenames["AUFTRAG"]
     filename = _format_filename(
         template,
         project_number=project_number,
-        receipt_number=receipt_number
+        receipt_number=receipt_number,
     )
     path = project_dir / filename
     return path
+
+
+def get_display_path(path: Path) -> str:
+    """Get relative grandparent path for logging purposes"""
+    display_path = (
+        f"{path.parent.parent.name}/"
+        f"{path.parent.name}/"
+        f"{path.name}"
+    )
+    return display_path

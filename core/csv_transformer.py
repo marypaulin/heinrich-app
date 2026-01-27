@@ -1,20 +1,33 @@
 import logging
 from typing import Iterable, List
 
+from core.messages import Messages
+
 from .config import Config
 from .models import CsvRow, LineItem
 
 
-def _get_hourly_description(hourly_rate: float, config: Config) -> str:
+def _get_hourly_description(
+    hourly_rate: float,
+    config: Config,
+    messages: Messages
+) -> str:
     """Get description based on hourly rate"""
     if hourly_rate in config.hourly_rate_mapping:
         return config.hourly_rate_mapping[hourly_rate]
     logging.warning(
         f"Unknown hourly rate {hourly_rate}, using default description '{config.hourly_rate_default}'")
+    messages.warning(
+        f"Unbekannter Stundenlohn {hourly_rate}, "
+        f"nutze Default '{config.hourly_rate_default}'"
+    )
     return config.hourly_rate_default
 
 
-def csv_rows_to_line_items(csv_rows: Iterable[CsvRow], config: Config) -> List[LineItem]:
+def csv_rows_to_line_items(
+        csv_rows: Iterable[CsvRow],
+        config: Config,
+) -> tuple[List[LineItem], list[str]]:
     """
     Transform CsvRow objects into LineItem domain objects.
 
@@ -49,7 +62,9 @@ def csv_rows_to_line_items(csv_rows: Iterable[CsvRow], config: Config) -> List[L
 
     Returns:
         A list of LineItem objects ready for document generation or export.
+        A list of info and warning messages to display in UI.
     """
+    messages = Messages()
     result = []
     for csv_row in csv_rows:
         order_number = csv_row.order_number
@@ -57,6 +72,8 @@ def csv_rows_to_line_items(csv_rows: Iterable[CsvRow], config: Config) -> List[L
             logging.info(
                 f"Skipping csv_row {csv_row.row_number} "
                 f"with invalid Auftrags-Nr.: {order_number}")
+            messages.warning(f"Überspringe Zeile {csv_row.row_number} "
+                             f"mit ungültiger Auftrags-Nr. {order_number}")
             continue
 
         # Arbeitsstunden
@@ -66,7 +83,10 @@ def csv_rows_to_line_items(csv_rows: Iterable[CsvRow], config: Config) -> List[L
         kind = "arbeitsstunden"
         quantity = csv_row.duration_hours
         hourly_description = _get_hourly_description(
-            csv_row.hourly_rate, config)
+            csv_row.hourly_rate,
+            config,
+            messages,
+        )
         description = f"{hourly_description} zu Auftrag Nr. {order_number}"
         unit_price = csv_row.hourly_rate
         total_price = csv_row.hourly_rate * csv_row.duration_hours
@@ -102,4 +122,4 @@ def csv_rows_to_line_items(csv_rows: Iterable[CsvRow], config: Config) -> List[L
             )
             result.append(line_item)
 
-    return result
+    return result, messages.items

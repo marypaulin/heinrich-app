@@ -10,7 +10,7 @@ from state import get_config, initialize_session_state
 st.set_page_config(
     page_title="Heinrich App",
     page_icon="assets/icon.ico",
-    layout="centered"
+    layout="centered",
 )
 
 
@@ -44,36 +44,27 @@ def run_lieferschein(config):
 
     try:
         # Find project dir, read csv and render lieferschein
+        # Log messages from backend for each step
         args = create_liefer_args(project_number_liefer)
-        project_dir = get_project_dir(
+        project_dir, messages = get_project_dir(
             config.data_root, args.project_number)
-        st.session_state.liefer_info.append(
-            f"Projektordner gefunden: {project_dir.name}")
-        csv_path = get_latest_csv_path(project_dir, config)
-        st.session_state.liefer_info.append(
-            f"CSV Datei gefunden: {csv_path.name}")
+        st.session_state.liefer_info.extend(messages)
+        csv_path, messages = get_latest_csv_path(project_dir, config)
+        st.session_state.liefer_info.extend(messages)
         csv_rows = load_csv_data(csv_path, config)
-        line_items = csv_rows_to_line_items(csv_rows, config)
-        render_lieferschein(
+        line_items, messages = csv_rows_to_line_items(csv_rows, config)
+        st.session_state.liefer_info.extend(messages)
+        messages = render_lieferschein(
             args.project_number,
             line_items,
             project_dir,
-            config
+            config,
         )
-
-        # Dummy info (later from backend)
-        st.session_state.liefer_info.extend([
-            "Achtung: Zeile 2 übersprungen wegen ungültiger Auftragsnummer 123",
-            "Achtung: Unbekannter Stundenlohn 60.00 in Zeile 3 - nehme 'Meisterstunde'"
-        ]
-        )
-        st.session_state.liefer_info.append(
-            f"Lieferschein erfolgreich erstellt: {project_dir.name}/Lieferschein XXXX.pdf")
-
+        st.session_state.liefer_info.extend(messages)
         st.toast("Lieferschein erzeugt", icon="✅")
 
     except Exception as e:
-        st.session_state.liefer_error = str(e)
+        st.session_state.liefer_error = f"Error: {str(e)}"
         st.toast("Fehler beim Erzeugen", icon="❌")
 
 
@@ -106,20 +97,20 @@ def app():
             st.text_input(
                 "Bitte Projektnummer eingeben",
                 key="project_number_liefer",
-                placeholder="zB 1235"
+                placeholder="zB 1235",
             )
 
         st.form_submit_button(
             "Lieferschein erzeugen",
             on_click=run_lieferschein,
-            args=(config,)
+            args=(config,),
         )
 
         # Display log messages under submit button
         if st.session_state.liefer_info:
             st.code(
                 "\n".join(st.session_state.liefer_info),
-                language="text"
+                language="text",
             )
 
         if st.session_state.liefer_error:
@@ -150,13 +141,15 @@ def app():
             f"Sie haben gewählt: {project_number_rechnung} und {receipt_number}"
         )
         args = create_rechnung_args(project_number_rechnung, receipt_number)
-        project_dir = get_project_dir(
-            config.data_root, args.project_number)
-        render_rechnung_and_auftrag(
+        project_dir, messages = get_project_dir(
+            config.data_root,
+            args.project_number,
+        )
+        messages = render_rechnung_and_auftrag(
             args.project_number,
             args.receipt_number,
             project_dir,
-            config
+            config,
         )
 
 
