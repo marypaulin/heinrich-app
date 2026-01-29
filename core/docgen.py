@@ -16,7 +16,7 @@ from docx.table import _Row
 
 from .formatting import format_price, format_quantity
 from .models import LineItem
-from .paths import VORDRUCK_PATH
+from .paths import VORDRUCK_PATH, get_display_path
 
 
 def load_template() -> DocxDocument:
@@ -31,7 +31,8 @@ def load_template() -> DocxDocument:
 def load_intermediate_template(path: Path) -> DocxDocument:
     try:
         doc = Document(str(path))
-        logging.info(f"Using intermediate template: {path}")
+        display_path = get_display_path(path)
+        logging.info(f"Using intermediate template: {display_path}")
         return doc
     except PackageNotFoundError:
         raise ValueError(
