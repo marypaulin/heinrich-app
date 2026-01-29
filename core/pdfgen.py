@@ -7,7 +7,6 @@ from pathlib import Path
 from docx2pdf import convert
 
 from .messages import Messages
-from .paths import get_display_path
 
 
 def render_pdf(docx_path: Path, messages: Messages) -> None:

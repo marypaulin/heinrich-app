@@ -34,7 +34,7 @@ def load_intermediate_template(path: Path) -> DocxDocument:
         return doc
     except PackageNotFoundError:
         raise ValueError(
-            f"Intermediate template not found - generate Lieferschein first.")
+            "Intermediate template not found - generate Lieferschein first.")
 
 
 def replace_placeholders(doc: DocxDocument, mapping: Dict[str, str]) -> None:

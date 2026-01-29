@@ -11,8 +11,7 @@ from .docgen import (fill_table_with_line_items, load_intermediate_template,
 from .formatting import format_price
 from .messages import Messages
 from .models import DocMeta, IntermediateData, LineItem
-from .paths import (get_auftrag_target_path, get_display_path,
-                    get_intermediate_rechnung_path, get_liefer_target_path,
+from .paths import (get_auftrag_target_path, get_intermediate_rechnung_path, get_liefer_target_path,
                     get_rechnung_target_path)
 from .pdfgen import render_pdf
 

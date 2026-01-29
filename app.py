@@ -3,7 +3,7 @@ import streamlit as st
 from core.csv_loader import load_csv_data
 from core.csv_transformer import csv_rows_to_line_items
 from core.input_args import create_liefer_args, create_rechnung_args
-from core.paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
+from core.paths import get_latest_csv_path, get_project_dir
 from core.services import render_lieferschein, render_rechnung_and_auftrag
 from state import get_config, initialize_session_state
 
