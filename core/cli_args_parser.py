@@ -1,6 +1,7 @@
 """
 CLI Argument parsing and validation for heinrich-metallbau CLI.
 """
+
 import argparse
 from typing import Iterable
 
@@ -11,23 +12,19 @@ def parse_cli_args(argv: Iterable[str] | None = None) -> InputArgs:
     parser = argparse.ArgumentParser(
         description="Generate documents from CSV and Word template."
     )
+    parser.add_argument("project_number", type=str, help="4-digit project number")
     parser.add_argument(
-        'project_number',
-        type=str,
-        help='4-digit project number'
-    )
-    parser.add_argument(
-        'mode',
+        "mode",
         type=str.lower,
-        choices=['liefer', 'rechnung'],
-        help='Mode: liefer or rechnung'
+        choices=["liefer", "rechnung"],
+        help="Mode: liefer or rechnung",
     )
     parser.add_argument(
-        'receipt_number',
+        "receipt_number",
         type=str,
-        nargs='?',
+        nargs="?",
         default=None,
-        help='Order number (required for rechnung)'
+        help="Order number (required for rechnung)",
     )
 
     args = parser.parse_args(list(argv) if argv is not None else None)

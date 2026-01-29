@@ -40,8 +40,10 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
                         "--nologo",
                         "--nodefault",
                         "--nofirststartwizard",
-                        "--convert-to", "pdf",
-                        "--outdir", str(pdf_path.parent),
+                        "--convert-to",
+                        "pdf",
+                        "--outdir",
+                        str(pdf_path.parent),
                         str(docx_path),
                     ],
                     check=True,
@@ -50,8 +52,7 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
                     stderr=subprocess.DEVNULL,
                 )
                 display_path = pdf_path.name
-                logging.info(
-                    f"Generated PDF document via LibreOffice: {display_path}")
+                logging.info(f"Generated PDF document via LibreOffice: {display_path}")
                 messages.info(f"PDF erzeugt: {display_path}")
                 return
             except subprocess.CalledProcessError as e:

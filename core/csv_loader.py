@@ -1,6 +1,7 @@
 """
 CSV loading utility
 """
+
 import csv
 from datetime import date, datetime
 from pathlib import Path
@@ -22,7 +23,7 @@ REQUIRED_FIELDS = [
     CSV_COL_ORDER_NUMBER,
     CSV_COL_DURATION,
     CSV_COL_HOURLY_RATE,
-    CSV_COL_MATERIAL
+    CSV_COL_MATERIAL,
 ]
 
 
@@ -76,8 +77,8 @@ def load_csv_data(csv_path: Path, config: Config) -> List[CsvRow]:
         ValueError: If required fields are missing or values cannot be parsed.
         FileNotFoundError: If the CSV file does not exist.
     """
-    with open(csv_path, newline='', encoding='utf-8') as f:
-        reader = csv.DictReader(f, delimiter=';')
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f, delimiter=";")
         rows = list(reader)
 
     result = []
@@ -86,18 +87,17 @@ def load_csv_data(csv_path: Path, config: Config) -> List[CsvRow]:
         # Check required fields
         missing = [field for field in REQUIRED_FIELDS if not row.get(field)]
         if missing:
-            raise ValueError(
-                f"Missing value(s) in row {i-1}: {', '.join(missing)}")
+            raise ValueError(f"Missing value(s) in row {i-1}: {', '.join(missing)}")
 
         csv_row = CsvRow(
-            row_number=i-1,
-            date=_parse_date(i-1, row[CSV_COL_DATE], config),
+            row_number=i - 1,
+            date=_parse_date(i - 1, row[CSV_COL_DATE], config),
             order_number=row[CSV_COL_ORDER_NUMBER],
             description=row[CSV_COL_DESC],
-            duration_hours=_parse_float(i-1, row[CSV_COL_DURATION]),
-            hourly_rate=_parse_float(i-1, row[CSV_COL_HOURLY_RATE]),
-            material_cost=_parse_float(i-1, row[CSV_COL_MATERIAL]),
-            total_cost=_parse_float(i-1, row[CSV_COL_TOTAL])
+            duration_hours=_parse_float(i - 1, row[CSV_COL_DURATION]),
+            hourly_rate=_parse_float(i - 1, row[CSV_COL_HOURLY_RATE]),
+            material_cost=_parse_float(i - 1, row[CSV_COL_MATERIAL]),
+            total_cost=_parse_float(i - 1, row[CSV_COL_TOTAL]),
         )
         result.append(csv_row)
     return result

@@ -5,7 +5,8 @@ import streamlit as st
 
 st.title("Konfiguration")
 st.markdown(
-    "Beispielhafte Anzeige von Konfigurationswerten plus Dummy-Button zum Bearbeiten.")
+    "Beispielhafte Anzeige von Konfigurationswerten plus Dummy-Button zum Bearbeiten."
+)
 
 # Dummy config values for demo
 config = {
@@ -25,5 +26,4 @@ with col1:
     if st.button("Konfiguration bearbeiten", type="primary"):
         st.balloons()
 with col2:
-    st.caption(
-        "Dummy-Button für die Demo. Später: Editor, Validierung, Speichern.")
+    st.caption("Dummy-Button für die Demo. Später: Editor, Validierung, Speichern.")

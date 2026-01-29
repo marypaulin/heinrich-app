@@ -8,15 +8,14 @@ from .models import CsvRow, LineItem
 
 
 def _get_hourly_description(
-    hourly_rate: float,
-    config: Config,
-    messages: Messages
+    hourly_rate: float, config: Config, messages: Messages
 ) -> str:
     """Get description based on hourly rate"""
     if hourly_rate in config.hourly_rate_mapping:
         return config.hourly_rate_mapping[hourly_rate]
     logging.warning(
-        f"Unknown hourly rate {hourly_rate}, using default description '{config.hourly_rate_default}'")
+        f"Unknown hourly rate {hourly_rate}, using default description '{config.hourly_rate_default}'"
+    )
     messages.warning(
         f"Unbekannter Stundenlohn {hourly_rate}, "
         f"nutze Default '{config.hourly_rate_default}'"
@@ -25,8 +24,8 @@ def _get_hourly_description(
 
 
 def csv_rows_to_line_items(
-        csv_rows: Iterable[CsvRow],
-        config: Config,
+    csv_rows: Iterable[CsvRow],
+    config: Config,
 ) -> tuple[List[LineItem], list[str]]:
     """
     Transform CsvRow objects into LineItem domain objects.
@@ -71,14 +70,16 @@ def csv_rows_to_line_items(
         if not order_number.isdigit() or len(order_number) != 8:
             logging.info(
                 f"Skipping csv_row {csv_row.row_number} "
-                f"with invalid Auftrags-Nr.: {order_number}")
-            messages.warning(f"Überspringe Zeile {csv_row.row_number} "
-                             f"mit ungültiger Auftrags-Nr. {order_number}")
+                f"with invalid Auftrags-Nr.: {order_number}"
+            )
+            messages.warning(
+                f"Überspringe Zeile {csv_row.row_number} "
+                f"mit ungültiger Auftrags-Nr. {order_number}"
+            )
             continue
 
         # Arbeitsstunden
-        logging.info(
-            f"Creating Arbeitsstunden item for Auftrags-Nr.: {order_number}")
+        logging.info(f"Creating Arbeitsstunden item for Auftrags-Nr.: {order_number}")
 
         kind = "arbeitsstunden"
         quantity = csv_row.duration_hours
@@ -97,13 +98,12 @@ def csv_rows_to_line_items(
             quantity=quantity,
             description=description,
             unit_price=unit_price,
-            total_price=total_price
+            total_price=total_price,
         )
         result.append(line_item)
 
         if csv_row.material_cost != 0:
-            logging.info(
-                f"Creating Material item for Auftrags-Nr.: {order_number}")
+            logging.info(f"Creating Material item for Auftrags-Nr.: {order_number}")
 
             kind = "material"
             quantity = 1
@@ -118,7 +118,7 @@ def csv_rows_to_line_items(
                 quantity=quantity,
                 description=description,
                 unit_price=unit_price,
-                total_price=total_price
+                total_price=total_price,
             )
             result.append(line_item)
 

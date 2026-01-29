@@ -1,6 +1,7 @@
 """
 Path and file discovery utilities for heinrich-tool.
 """
+
 import logging
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from core.messages import Messages
 from .config import Config
 
 HEINRICH_ROOT = Path(__file__).resolve().parent.parent
-CONFIG_PATH = HEINRICH_ROOT / "config.json"     # For import in cli.py
+CONFIG_PATH = HEINRICH_ROOT / "config.json"  # For import in cli.py
 
 CSV_NAME_RE = "heinrich_zeiterfassung_*.csv"
 TEMPLATES_DIR = HEINRICH_ROOT / "templates"
@@ -38,8 +39,7 @@ def get_project_dir(data_root: Path, project_number: str) -> tuple[Path, list[st
             logging.info(f"Found project folder: {display_folder}")
             messages.info(f"Projektordner gefunden: {display_folder}")
             return folder, messages.items
-    raise FileNotFoundError(
-        f"No folder found for project number {project_number}")
+    raise FileNotFoundError(f"No folder found for project number {project_number}")
 
 
 def get_latest_csv_path(project_dir: Path, config: Config) -> tuple[Path, list[str]]:
@@ -122,9 +122,5 @@ def get_auftrag_target_path(
 
 def get_display_path(path: Path) -> str:
     """Get relative grandparent path for logging purposes"""
-    display_path = (
-        f"{path.parent.parent.name}/"
-        f"{path.parent.name}/"
-        f"{path.name}"
-    )
+    display_path = f"{path.parent.parent.name}/{path.parent.name}/{path.name}"
     return display_path

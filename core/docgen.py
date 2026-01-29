@@ -1,6 +1,7 @@
 """
 Word and PDF document generation for heinrich-metallbau.
 """
+
 import logging
 from copy import deepcopy
 from pathlib import Path
@@ -34,7 +35,8 @@ def load_intermediate_template(path: Path) -> DocxDocument:
         return doc
     except PackageNotFoundError:
         raise ValueError(
-            "Intermediate template not found - generate Lieferschein first.")
+            "Intermediate template not found - generate Lieferschein first."
+        )
 
 
 def replace_placeholders(doc: DocxDocument, mapping: Dict[str, str]) -> None:

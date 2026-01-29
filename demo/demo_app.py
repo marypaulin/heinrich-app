@@ -10,12 +10,10 @@ st.set_page_config(
 
 st.title("Heinrich App")
 
-st.markdown(
-    """
+st.markdown("""
 Wähle links eine Seite aus:
 
 - Dokumente erzeugen
 - E-Rechnung
 - Konfiguration
-"""
-)
+""")

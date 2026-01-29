@@ -33,10 +33,7 @@ def load_config(path: Path) -> Config:
         data_root = path.parent / data_root_raw
 
     mapping_raw = raw["HOURLY_RATE_MAPPING"]
-    mapping_converted = {
-        float(k): v
-        for k, v in mapping_raw.items()
-    }
+    mapping_converted = {float(k): v for k, v in mapping_raw.items()}
 
     default_description = raw["HOURLY_RATE_DEFAULT"]
     date_format = raw["DATE_FORMAT"]
@@ -48,7 +45,7 @@ def load_config(path: Path) -> Config:
         documents[key] = DocumentConfig(
             doctype=value["DOCTYPE"],
             header=value["HEADER"],
-            delivery_days=value.get("DELIVERY_DAYS")
+            delivery_days=value.get("DELIVERY_DAYS"),
         )
 
     filenames = raw["FILENAMES"]
@@ -60,5 +57,5 @@ def load_config(path: Path) -> Config:
         date_format=date_format,
         vat_rate=vat_rate,
         documents=documents,
-        filenames=filenames
+        filenames=filenames,
     )

@@ -1,6 +1,7 @@
 """
 heinrich-metallbau CLI utility
 """
+
 import logging
 import sys
 
@@ -11,7 +12,7 @@ from core.csv_transformer import csv_rows_to_line_items
 from core.paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
 from core.services import render_lieferschein, render_rechnung_and_auftrag
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 def main():
@@ -19,25 +20,20 @@ def main():
     config = load_config(CONFIG_PATH)
     project_dir, _ = get_project_dir(config.data_root, args.project_number)
 
-    if args.mode == 'liefer':
+    if args.mode == "liefer":
         csv_path, _ = get_latest_csv_path(project_dir, config)
         csv_rows = load_csv_data(csv_path, config)
         line_items, _ = csv_rows_to_line_items(csv_rows, config)
-        _ = render_lieferschein(args.project_number,
-                            line_items,
-                            project_dir,
-                            config)
-    elif args.mode == 'rechnung':
+        _ = render_lieferschein(args.project_number, line_items, project_dir, config)
+    elif args.mode == "rechnung":
         _ = render_rechnung_and_auftrag(
-            args.project_number,
-            args.receipt_number,
-            project_dir,
-            config)
+            args.project_number, args.receipt_number, project_dir, config
+        )
     else:
         logging.error(f"Unknown mode: {args.mode}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
     except (FileNotFoundError, ValueError) as e:

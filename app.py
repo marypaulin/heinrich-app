@@ -23,7 +23,7 @@ def suppress_round_corners():
         }
         </style>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 
@@ -32,22 +32,18 @@ def run_lieferschein(config):
     st.session_state.liefer_info = []
     st.session_state.liefer_error = None
 
-    project_number_liefer = st.session_state.get(
-        "project_number_liefer", "").strip()
+    project_number_liefer = st.session_state.get("project_number_liefer", "").strip()
 
     # Catch error if button is clicked without project number
     if not project_number_liefer:
-        st.session_state.liefer_info.append(
-            "Bitte eine Projektnummer eingeben."
-        )
+        st.session_state.liefer_info.append("Bitte eine Projektnummer eingeben.")
         return
 
     try:
         # Find project dir, read csv and render lieferschein
         # Log messages from backend for each step
         args = create_liefer_args(project_number_liefer)
-        project_dir, messages = get_project_dir(
-            config.data_root, args.project_number)
+        project_dir, messages = get_project_dir(config.data_root, args.project_number)
         st.session_state.liefer_info.extend(messages)
         csv_path, messages = get_latest_csv_path(project_dir, config)
         st.session_state.liefer_info.extend(messages)
@@ -74,15 +70,13 @@ def run_rechnung(config):
     st.session_state.rechnung_error = []
 
     project_number_rechnung = st.session_state.get(
-        "project_number_rechnung", "").strip()
-    receipt_number = st.session_state.get(
-        "receipt_number", "").strip()
+        "project_number_rechnung", ""
+    ).strip()
+    receipt_number = st.session_state.get("receipt_number", "").strip()
 
     # Catch error if button is clicked without numbers
     if not project_number_rechnung or not receipt_number:
-        st.session_state.liefer_info.append(
-            "Bitte Projekt- und Belegnummer eingeben."
-        )
+        st.session_state.liefer_info.append("Bitte Projekt- und Belegnummer eingeben.")
         return
 
     try:
@@ -106,6 +100,7 @@ def run_rechnung(config):
     except Exception as e:
         st.session_state.rechnung_error = f"Error: {str(e)}"
         st.toast("Fehler beim Erzeugen", icon="❌")
+
 
 def app():
     suppress_round_corners()
@@ -172,13 +167,13 @@ def app():
             st.text_input(
                 "Bitte Belegnummer eingeben",
                 key="receipt_number",
-                placeholder="zB 4504049161"
+                placeholder="zB 4504049161",
             )
 
         st.form_submit_button(
             "Rechnung und Auftragsbestätigung erzeugen",
             on_click=run_rechnung,
-            args=(config,)
+            args=(config,),
         )
 
         # Display log messages under submit button

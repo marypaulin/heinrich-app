@@ -6,13 +6,22 @@ from typing import Dict, List
 
 from .calculations import calculate_sums_and_vat
 from .config import Config
-from .docgen import (fill_table_with_line_items, load_intermediate_template,
-                     load_template, replace_placeholders, save_docx)
+from .docgen import (
+    fill_table_with_line_items,
+    load_intermediate_template,
+    load_template,
+    replace_placeholders,
+    save_docx,
+)
 from .formatting import format_price
 from .messages import Messages
 from .models import DocMeta, IntermediateData, LineItem
-from .paths import (get_auftrag_target_path, get_intermediate_rechnung_path, get_liefer_target_path,
-                    get_rechnung_target_path)
+from .paths import (
+    get_auftrag_target_path,
+    get_intermediate_rechnung_path,
+    get_liefer_target_path,
+    get_rechnung_target_path,
+)
 from .pdfgen import render_pdf
 
 PH_DATE_TODAY = "<Datum heute>"
@@ -37,7 +46,9 @@ def build_meta_mapping(data: DocMeta, config: Config) -> Dict[str, str]:
     }
 
 
-def build_intermediate_mapping(data: IntermediateData, config: Config) -> Dict[str, str]:
+def build_intermediate_mapping(
+    data: IntermediateData, config: Config
+) -> Dict[str, str]:
     t = data.totals
     return {
         PH_SUM_NET: format_price(t.sum_net),
