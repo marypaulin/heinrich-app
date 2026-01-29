@@ -34,13 +34,13 @@ def csv_rows_to_line_items(
     into document-ready line items.
 
     Transformation rules:
-    - Each valid CsvRow always produces one "arbeitsstunden" LineItem.
+    - Each valid CsvRow always produces one "hours" LineItem.
     - If material_cost is non-zero, an additional "material" LineItem
       is created.
     - LineItems are enriched with calculated totals and derived descriptions.
 
     Data lineage:
-    - Arbeitsstunden LineItem:
+    - Hours LineItem:
         quantity    <- CsvRow.duration_hours
         unit_price  <- CsvRow.hourly_rate
         total_price <- hourly_rate * duration
@@ -70,7 +70,7 @@ def csv_rows_to_line_items(
         if not order_number.isdigit() or len(order_number) != 8:
             logging.info(
                 f"Skipping csv_row {csv_row.row_number} "
-                f"with invalid Auftrags-Nr.: {order_number}"
+                f"with invalid order number.: {order_number}"
             )
             messages.warning(
                 f"Überspringe Zeile {csv_row.row_number} "
@@ -79,9 +79,9 @@ def csv_rows_to_line_items(
             continue
 
         # Arbeitsstunden
-        logging.info(f"Creating Arbeitsstunden item for Auftrags-Nr.: {order_number}")
+        logging.info(f"Creating hours item for order number.: {order_number}")
 
-        kind = "arbeitsstunden"
+        kind = "hours"
         quantity = csv_row.duration_hours
         hourly_description = _get_hourly_description(
             csv_row.hourly_rate,
@@ -103,12 +103,12 @@ def csv_rows_to_line_items(
         result.append(line_item)
 
         if csv_row.material_cost != 0:
-            logging.info(f"Creating Material item for Auftrags-Nr.: {order_number}")
+            logging.info(f"Creating material item for order number: {order_number}")
 
             kind = "material"
             quantity = 1
             # NOTE: The original CSV description is currently not used.
-            # Can be added later if needed.
+            # TODO: Add CSV description
             description = f"Material zu Auftrag Nr. {order_number}"
             unit_price = csv_row.material_cost
             total_price = unit_price

@@ -17,10 +17,10 @@ from .formatting import format_price
 from .messages import Messages
 from .models import DocMeta, IntermediateData, LineItem
 from .paths import (
-    get_auftrag_target_path,
-    get_intermediate_rechnung_path,
-    get_liefer_target_path,
-    get_rechnung_target_path,
+    get_delivery_target_path,
+    get_intermediate_invoice_path,
+    get_invoice_target_path,
+    get_order_target_path,
 )
 from .pdfgen import render_pdf
 
@@ -33,7 +33,7 @@ PH_HEADER = "<Header>"
 PH_SUM_NET = "<Summe>"
 PH_VAT = "<Ust>"
 PH_SUM_GROSS = "<Gessumme>"
-PH_DELIVERY_DATE = "<Datum heute + 21 Tage>"
+PH_DELIVERY_DATE = "<Lieferdatum>"
 
 
 def build_meta_mapping(data: DocMeta, config: Config) -> Dict[str, str]:
@@ -58,7 +58,7 @@ def build_intermediate_mapping(
     }
 
 
-def render_lieferschein_docx(
+def generate_delivery_docx(
     project_number: str,
     line_items: List[LineItem],
     target_path: Path,
@@ -70,7 +70,7 @@ def render_lieferschein_docx(
     doc = load_template()
     doc_config = config.documents["LIEFERSCHEIN"]
 
-    # Set up meta data for Lieferschein
+    # Set up meta data for delivery note
     today = date.today()
 
     meta_data = DocMeta(
@@ -100,11 +100,11 @@ def render_lieferschein_docx(
         build_intermediate_mapping(intermediate_data, config),
     )
 
-    intermediate_path = get_intermediate_rechnung_path(project_number)
+    intermediate_path = get_intermediate_invoice_path(project_number)
     intermediate_path.parent.mkdir(parents=True, exist_ok=True)
     save_docx(doc, intermediate_path)
 
-    # Phase 3: Fill Lieferschein placeholders + save final
+    # Phase 3: Fill delivery note placeholders + save final
     replace_placeholders(
         doc,
         build_meta_mapping(meta_data, config),
@@ -113,11 +113,11 @@ def render_lieferschein_docx(
     save_docx(doc, target_path)
 
     display_path = target_path.name
-    logging.info(f"Generated Lieferschein: {display_path}")
+    logging.info(f"Generated delivery note: {display_path}")
     messages.info(f"Lieferschein erzeugt: {display_path}")
 
 
-def render_rechnung_and_auftrag_docx(
+def generate_invoice_and_order_docx(
     project_number: str,
     receipt_number: str,
     target_paths: Dict[str, Path],
@@ -126,55 +126,55 @@ def render_rechnung_and_auftrag_docx(
 ) -> None:
     """Generate Rechnung and Auftragsbestaetigung DOCX from intermediate template."""
 
-    intermediate_path = get_intermediate_rechnung_path(project_number)
+    intermediate_path = get_intermediate_invoice_path(project_number)
     doc = load_intermediate_template(intermediate_path)
 
-    doc_rechnung = deepcopy(doc)
-    doc_auftrag = deepcopy(doc)
+    doc_invoice = deepcopy(doc)
+    doc_order = deepcopy(doc)
 
-    rechnung_config = config.documents["RECHNUNG"]
-    auftrag_config = config.documents["AUFTRAG"]
+    config_invoice = config.documents["RECHNUNG"]
+    config_order = config.documents["AUFTRAG"]
 
-    # Set up meta data for Rechnung and Auftragsbestätigung
+    # Set up meta data for invoice and order
     today = date.today()
 
-    meta_rechnung = DocMeta(
+    meta_invoice = DocMeta(
         project_number=project_number,
         receipt_number=receipt_number,
-        doctype=rechnung_config.doctype,
-        header=rechnung_config.header,
+        doctype=config_invoice.doctype,
+        header=config_invoice.header,
         date_today=today,
     )
-    meta_auftrag = DocMeta(
+    meta_order = DocMeta(
         project_number=project_number,
         receipt_number=receipt_number,
-        doctype=auftrag_config.doctype,
-        header=auftrag_config.header,
+        doctype=config_order.doctype,
+        header=config_order.header,
         date_today=today,
     )
 
-    # Fill Rechnung placeholders + save
+    # Fill invoice placeholders + save
     replace_placeholders(
-        doc_rechnung,
-        build_meta_mapping(meta_rechnung, config),
+        doc_invoice,
+        build_meta_mapping(meta_invoice, config),
     )
-    save_docx(doc_rechnung, target_paths["rechnung"])
-    display_path = target_paths["rechnung"].name
-    logging.info(f"Generated Rechnung: {display_path}")
+    save_docx(doc_invoice, target_paths["invoice"])
+    display_path = target_paths["invoice"].name
+    logging.info(f"Generated invoice: {display_path}")
     messages.info(f"Rechnung erzeugt: {display_path}")
 
-    # Fill Auftragsbestätigung placeholders + save
+    # Fill order placeholders + save
     replace_placeholders(
-        doc_auftrag,
-        build_meta_mapping(meta_auftrag, config),
+        doc_order,
+        build_meta_mapping(meta_order, config),
     )
-    save_docx(doc_auftrag, target_paths["auftrag"])
-    display_path = target_paths["auftrag"].name
-    logging.info(f"Generated Auftragsbestätigung: {display_path}")
+    save_docx(doc_order, target_paths["order"])
+    display_path = target_paths["order"].name
+    logging.info(f"Generated order confirmation: {display_path}")
     messages.info(f"Auftragsbestätigung erzeugt: {display_path}")
 
 
-def render_lieferschein(
+def generate_delivery_note(
     project_number: str,
     line_items: List[LineItem],
     project_dir: Path,
@@ -182,8 +182,8 @@ def render_lieferschein(
 ) -> list[str]:
     """Render Lieferschein in DOCX and PDF format"""
     messages = Messages()
-    target_path = get_liefer_target_path(project_dir, project_number, config)
-    render_lieferschein_docx(
+    target_path = get_delivery_target_path(project_dir, project_number, config)
+    generate_delivery_docx(
         project_number,
         line_items,
         target_path,
@@ -194,7 +194,7 @@ def render_lieferschein(
     return messages.items
 
 
-def render_rechnung_and_auftrag(
+def generate_invoice_and_order_confirmation(
     project_number: str,
     receipt_number: str,
     project_dir: Path,
@@ -202,29 +202,29 @@ def render_rechnung_and_auftrag(
 ) -> list[str]:
     """Render Rechnung and Auftragsbestätigung in DOCX and PDF format"""
     messages = Messages()
-    rechnung_path = get_rechnung_target_path(
+    invoice_path = get_invoice_target_path(
         project_dir,
         project_number,
         receipt_number,
         config,
     )
-    auftrag_path = get_auftrag_target_path(
+    order_path = get_order_target_path(
         project_dir,
         project_number,
         receipt_number,
         config,
     )
     target_paths = {
-        "rechnung": rechnung_path,
-        "auftrag": auftrag_path,
+        "invoice": invoice_path,
+        "order": order_path,
     }
-    render_rechnung_and_auftrag_docx(
+    generate_invoice_and_order_docx(
         project_number,
         receipt_number,
         target_paths,
         config,
         messages,
     )
-    render_pdf(rechnung_path, messages)
-    render_pdf(auftrag_path, messages)
+    render_pdf(invoice_path, messages)
+    render_pdf(order_path, messages)
     return messages.items

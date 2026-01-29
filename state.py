@@ -10,11 +10,11 @@ def get_config() -> Config:
 
 def initialize_session_state() -> None:
     # Session state for UI messages
-    if "liefer_info" not in st.session_state:
-        st.session_state.liefer_info = []
-    if "liefer_error" not in st.session_state:
-        st.session_state.liefer_error = None
-    if "rechnung_info" not in st.session_state:
-        st.session_state.rechnung_info = []
-    if "rechnung_error" not in st.session_state:
-        st.session_state.rechnung_error = None
+    if "delivery_info" not in st.session_state:
+        st.session_state.delivery_info = []
+    if "delivery_error" not in st.session_state:
+        st.session_state.delivery_error = None
+    if "invoice_info" not in st.session_state:
+        st.session_state.invoice_info = []
+    if "invoice_error" not in st.session_state:
+        st.session_state.invoice_error = None

@@ -18,7 +18,7 @@ class CsvRow:
 @dataclass
 class LineItem:
     # CSV rows split into two kinds
-    kind: Literal["arbeitsstunden", "material"]
+    kind: Literal["hours", "material"]
     order_number: str  # "Auftrag Nr."
     quantity: float  # "Menge"
     description: str  # "Beschreibung"

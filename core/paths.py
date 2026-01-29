@@ -10,7 +10,7 @@ from core.messages import Messages
 from .config import Config
 
 HEINRICH_ROOT = Path(__file__).resolve().parent.parent
-CONFIG_PATH = HEINRICH_ROOT / "config.json"  # For import in cli.py
+CONFIG_PATH = HEINRICH_ROOT / "config.json"
 
 CSV_NAME_RE = "heinrich_zeiterfassung_*.csv"
 TEMPLATES_DIR = HEINRICH_ROOT / "templates"
@@ -61,7 +61,7 @@ def get_intermediate_project_dir(project_number: str) -> Path:
     return path
 
 
-def get_intermediate_rechnung_path(project_number: str) -> Path:
+def get_intermediate_invoice_path(project_number: str) -> Path:
     """templates/intermediate/<project_number>/Vordruck_Rechnung_<project_number>.docx"""
     filename = _format_filename(
         INTERMEDIATE_FILENAME,
@@ -71,7 +71,7 @@ def get_intermediate_rechnung_path(project_number: str) -> Path:
     return path
 
 
-def get_liefer_target_path(
+def get_delivery_target_path(
     project_dir: Path,
     project_number: str,
     config: Config,
@@ -86,7 +86,7 @@ def get_liefer_target_path(
     return path
 
 
-def get_rechnung_target_path(
+def get_invoice_target_path(
     project_dir: Path,
     project_number: str,
     receipt_number: str,
@@ -103,7 +103,7 @@ def get_rechnung_target_path(
     return path
 
 
-def get_auftrag_target_path(
+def get_order_target_path(
     project_dir: Path,
     project_number: str,
     receipt_number: str,
@@ -122,5 +122,6 @@ def get_auftrag_target_path(
 
 def get_display_path(path: Path) -> str:
     """Get relative grandparent path for logging purposes"""
+    # TODO(optional): Dynamic parent level
     display_path = f"{path.parent.parent.name}/{path.parent.name}/{path.name}"
     return display_path

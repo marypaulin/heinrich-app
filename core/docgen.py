@@ -1,5 +1,5 @@
 """
-Word and PDF document generation for heinrich-metallbau.
+Word document generation.
 """
 
 import logging
@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, List
 
 from docx import Document
-from docx.document import Document as DocxDocument
+from docx.document import Document as DocxDocument  # Only for type hints
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.opc.exceptions import PackageNotFoundError
 from docx.shared import Pt
@@ -22,7 +22,8 @@ from .paths import VORDRUCK_PATH, get_display_path
 def load_template() -> DocxDocument:
     try:
         doc = Document(str(VORDRUCK_PATH))
-        logging.info(f"Using template: {VORDRUCK_PATH}")
+        display_path = get_display_path(VORDRUCK_PATH)
+        logging.info(f"Using template: {display_path}")
         return doc
     except PackageNotFoundError:
         raise ValueError(f"Template not found: {VORDRUCK_PATH}")
@@ -31,6 +32,7 @@ def load_template() -> DocxDocument:
 def load_intermediate_template(path: Path) -> DocxDocument:
     try:
         doc = Document(str(path))
+        # TODO(optional): Log UI message
         display_path = get_display_path(path)
         logging.info(f"Using intermediate template: {display_path}")
         return doc

@@ -41,7 +41,7 @@ Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestarte
 ### Lieferschein erzeugen
 
 ```
-python cli.py 1235 liefer
+python cli.py 1235 delivery
 ```
 
 ---
@@ -49,7 +49,7 @@ python cli.py 1235 liefer
 ### Rechnung & Auftragsbestätigung erzeugen
 
 ```
-python cli.py 1235 rechnung 4504049161
+python cli.py 1235 invoice 4504049161
 ```
 
 ---
@@ -65,7 +65,7 @@ Zentral ist ein **zweistufiger Prozess**:
 
 ---
 
-### Modus `liefer` – Lieferschein erzeugen
+### Modus `delivery` – Lieferschein erzeugen
 
 **Eingaben**
 
@@ -92,7 +92,7 @@ Zentral ist ein **zweistufiger Prozess**:
 
 ---
 
-### Modus `rechnung` – Rechnung und Auftragsbestätigung erzeugen
+### Modus `invoice` – Rechnung und Auftragsbestätigung erzeugen
 
 **Eingaben**
 
@@ -120,7 +120,6 @@ Zentral ist ein **zweistufiger Prozess**:
 
 ## Geplante Erweiterungen (Ausblick)
 
-* Web-Oberfläche mit denselben Workflows wie das CLI
 * UI-basierte Erfassung von Positionen und Erzeugung von Angeboten
 * Generierung von E-Rechnungen (z. B. XRechnung / ZUGFeRD)
 
@@ -137,19 +136,19 @@ Project numbers:
 - 1253
 
 ```
-python cli.py 1218 liefer
-python cli.py 1218 rechnung 4504020708
+python cli.py 1218 delivery
+python cli.py 1218 invoice 4504020708
 
-python cli.py 1223 liefer
-python cli.py 1223 rechnung 4504030989
+python cli.py 1223 delivery
+python cli.py 1223 invoice 4504030989
 
-python cli.py 1235 liefer
-python cli.py 1235 rechnung 4504049161
+python cli.py 1235 delivery
+python cli.py 1235 invoice 4504049161
 
-python cli.py 1236 liefer
-python cli.py 1236 rechnung 4504059903
+python cli.py 1236 delivery
+python cli.py 1236 invoice 4504059903
 
-python cli.py 1253 liefer
-python cli.py 1253 rechnung 4504072524
+python cli.py 1253 delivery
+python cli.py 1253 invoice 4504072524
 
 ```

@@ -7,32 +7,32 @@ PROJECT_NUMBER_RE = re.compile(r"\d{4}")
 
 
 @dataclass(frozen=True)
-class LieferArgs:
+class DeliveryArgs:
     project_number: str
-    mode: Literal["liefer"]
+    mode: Literal["delivery"]
 
 
 @dataclass(frozen=True)
-class RechnungArgs:
+class InvoiceArgs:
     project_number: str
-    mode: Literal["rechnung"]
+    mode: Literal["invoice"]
     receipt_number: str
 
 
-InputArgs = Union[LieferArgs, RechnungArgs]
+InputArgs = Union[DeliveryArgs, InvoiceArgs]
 
 
-def create_liefer_args(project_number: str) -> LieferArgs:
+def create_delivery_args(project_number: str) -> DeliveryArgs:
     if not PROJECT_NUMBER_RE.fullmatch(project_number):
         raise ValueError("PROJECT_NUMBER must be exactly four digits")
-    return LieferArgs(project_number=project_number, mode="liefer")
+    return DeliveryArgs(project_number=project_number, mode="delivery")
 
 
-def create_rechnung_args(project_number: str, receipt_number: str) -> RechnungArgs:
+def create_invoice_args(project_number: str, receipt_number: str) -> InvoiceArgs:
     if not PROJECT_NUMBER_RE.fullmatch(project_number):
         raise ValueError("PROJECT_NUMBER must be exactly four digits")
     if not receipt_number:
-        raise ValueError("RECEIPT_NUMBER is required for rechnung mode")
-    return RechnungArgs(
-        project_number=project_number, mode="rechnung", receipt_number=receipt_number
+        raise ValueError("RECEIPT_NUMBER is required for invoice mode")
+    return InvoiceArgs(
+        project_number=project_number, mode="invoice", receipt_number=receipt_number
     )
