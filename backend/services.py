@@ -83,7 +83,8 @@ def generate_delivery_docx(
 
     # Set up intermediate data
     totals = calculate_sums_and_vat(line_items, config)
-    delivery_days = doc_config.delivery_days or 21
+    d = doc_config.delivery_days
+    delivery_days = d if d is not None else 21
     delivery_date = today + timedelta(days=delivery_days)
 
     intermediate_data = IntermediateData(
