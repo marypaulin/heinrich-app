@@ -5,7 +5,7 @@ Path and file discovery utilities for heinrich-tool.
 import logging
 from pathlib import Path
 
-from core.messages import Messages
+from backend.messages import Messages
 
 from .config import Config
 

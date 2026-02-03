@@ -1,7 +1,7 @@
 import streamlit as st
 
-from core.config import Config, load_config
-from core.paths import CONFIG_PATH
+from backend.config import Config, load_config
+from backend.paths import CONFIG_PATH
 
 
 def get_config() -> Config:

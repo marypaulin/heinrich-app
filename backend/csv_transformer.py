@@ -1,7 +1,7 @@
 import logging
 from typing import Iterable, List
 
-from core.messages import Messages
+from backend.messages import Messages
 
 from .config import Config
 from .models import CsvRow, LineItem

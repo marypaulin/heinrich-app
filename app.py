@@ -1,10 +1,10 @@
 import streamlit as st
 
-from core.csv_loader import load_csv_data
-from core.csv_transformer import csv_rows_to_line_items
-from core.input_args import create_delivery_args, create_invoice_args
-from core.paths import get_latest_csv_path, get_project_dir
-from core.services import (
+from backend.csv_loader import load_csv_data
+from backend.csv_transformer import csv_rows_to_line_items
+from backend.input_args import create_delivery_args, create_invoice_args
+from backend.paths import get_latest_csv_path, get_project_dir
+from backend.services import (
     generate_delivery_note,
     generate_invoice_and_order_confirmation,
 )
