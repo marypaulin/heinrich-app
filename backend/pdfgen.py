@@ -16,51 +16,95 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
     pdf_path = docx_path.with_suffix(".pdf")
     system = platform.system()
 
+    # --------------------
+    # Windows: Microsoft Word via docx2pdf
+    # --------------------
     if system == "Windows":
-        # Use Microsoft Word via docx2pdf for perfect formatting
-        try:
-            convert(str(docx_path), str(pdf_path))
-            display_path = pdf_path.name
-            logging.info(f"Generated PDF document via Word: {display_path}")
-            messages.info(f"PDF erzeugt: {display_path}")
-            return
-        except Exception as e:
-            logging.error(f"Word-based PDF conversion failed: {e}")
-            return
-
-    elif system == "Linux":
-        # Use LibreOffice headless mode as fallback
-        soffice = shutil.which("soffice") or shutil.which("libreoffice")
-        if soffice:
+        # Häufigster Fehler: bestehende / geöffnete PDF blockiert die Neuerzeugung
+        if pdf_path.exists():
             try:
-                subprocess.run(
-                    [
-                        soffice,
-                        "--headless",
-                        "--nologo",
-                        "--nodefault",
-                        "--nofirststartwizard",
-                        "--convert-to",
-                        "pdf",
-                        "--outdir",
-                        str(pdf_path.parent),
-                        str(docx_path),
-                    ],
-                    check=True,
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
+                pdf_path.unlink()
+            except PermissionError:
+                messages.error(
+                    f"PDF konnte nicht überschrieben werden (Datei evtl. geöffnet): {pdf_path.name}"
                 )
-                display_path = pdf_path.name
-                logging.info(f"Generated PDF document via LibreOffice: {display_path}")
-                messages.info(f"PDF erzeugt: {display_path}")
-                return
-            except subprocess.CalledProcessError as e:
-                logging.error(f"LibreOffice PDF conversion failed: {e}")
+                logging.exception("PDF locked / cannot delete: %s", pdf_path)
                 return
 
-    # If no supported system or conversion failed
-    logging.error(
-        "PDF generation not supported. "
-        "Please install Microsoft Word (on Windows) or LibreOffice (on Linux)."
-    )
+        try:
+            # Robuster als output_file: Ausgabe in Zielordner
+            convert(str(docx_path), str(docx_path.parent))
+
+            # docx2pdf kann still scheitern -> Existenz prüfen
+            if not pdf_path.exists():
+                messages.error(
+                    "PDF wurde nicht erzeugt. "
+                    "Bitte prüfen: Word installiert, Datei nicht geöffnet, "
+                    "keine hängende WINWORD.EXE."
+                )
+                logging.error("docx2pdf finished without creating pdf: %s", pdf_path)
+                return
+
+            messages.info(f"PDF erzeugt: {pdf_path.name}")
+            logging.info("Generated PDF document via Word: %s", pdf_path.name)
+            return
+
+        except Exception as e:
+            messages.error(f"PDF-Erzeugung fehlgeschlagen: {e}")
+            logging.exception("Word-based PDF conversion failed")
+            return
+
+    # --------------------
+    # Linux: LibreOffice (headless)
+    # --------------------
+    elif system == "Linux":
+        soffice = shutil.which("soffice") or shutil.which("libreoffice")
+        if not soffice:
+            messages.error(
+                "LibreOffice nicht gefunden. Bitte LibreOffice installieren."
+            )
+            logging.error("LibreOffice (soffice) not found")
+            return
+
+        try:
+            subprocess.run(
+                [
+                    soffice,
+                    "--headless",
+                    "--nologo",
+                    "--nodefault",
+                    "--nofirststartwizard",
+                    "--convert-to",
+                    "pdf",
+                    "--outdir",
+                    str(docx_path.parent),
+                    str(docx_path),
+                ],
+                check=True,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+            if not pdf_path.exists():
+                messages.error(
+                    "PDF wurde nicht erzeugt. "
+                    "LibreOffice-Konvertierung fehlgeschlagen."
+                )
+                logging.error("LibreOffice finished without creating pdf: %s", pdf_path)
+                return
+
+            messages.info(f"PDF erzeugt: {pdf_path.name}")
+            logging.info("Generated PDF document via LibreOffice: %s", pdf_path.name)
+            return
+
+        except subprocess.CalledProcessError as e:
+            messages.error(f"LibreOffice PDF-Erzeugung fehlgeschlagen: {e}")
+            logging.exception("LibreOffice PDF conversion failed")
+            return
+
+    # --------------------
+    # Unsupported system
+    # --------------------
+    messages.error("PDF-Erzeugung wird auf diesem Betriebssystem nicht unterstützt.")
+    logging.error("PDF generation not supported on system: %s", system)

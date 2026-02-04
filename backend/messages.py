@@ -10,3 +10,6 @@ class Messages:
 
     def warning(self, text: str) -> None:
         self.items.append(f"Achtung: {text}")
+
+    def error(self, text: str) -> None:
+        self.items.append(f"Error: {text}")

@@ -4,6 +4,52 @@ Dieses Programm unterstützt die Erstellung von **Lieferscheinen**, **Auftragsbe
 
 ---
 
+## Git Installation (Windows)
+
+1. Öffne die offizielle Git-Website:
+   [https://git-scm.com](https://git-scm.com)
+
+2. Klicke auf **Download for Windows** und lade den Installer herunter.
+
+3. Starte den Installer und bestätige die Standardeinstellungen.
+   Es sind keine speziellen Anpassungen erforderlich.
+
+4. Nach der Installation ein neues Terminal öffnen (PowerShell oder Eingabeaufforderung).
+
+5. Installation prüfen:
+   `git --version`
+
+Wenn eine Versionsnummer angezeigt wird, ist Git korrekt installiert und einsatzbereit.
+
+---
+
+## Python Installation (Windows)
+
+Für die Nutzung des Tools wird Python benötigt. Empfohlen wird die Installation über den offiziellen Python-Installer.
+
+1. Öffne die offizielle Python-Website:
+   [https://www.python.org](https://www.python.org)
+
+2. Klicke auf **Downloads** und lade die aktuelle Python-Version für Windows herunter (Python 3.x).
+
+3. Starte den Installer.
+   **Wichtig:** Aktiviere im ersten Dialog die Option
+   **“Add Python to PATH”**.
+
+4. Klicke auf **Install Now** und schließe die Installation ab.
+
+5. Öffne anschließend eine neue PowerShell.
+
+6. Installation prüfen:
+   `python --version`
+   oder alternativ:
+   `py --version`
+
+Wenn eine Versionsnummer angezeigt wird, ist Python korrekt installiert.
+
+
+---
+
 ## Download via Git
 
 1. Klicke auf den grünen Button **Code** und kopiere die **HTTPS-URL** des Repositories.
