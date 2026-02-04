@@ -6,4 +6,5 @@ output/
 *.egg-info/
 .vscode
 .venv/
+.ruff_cache/
 
