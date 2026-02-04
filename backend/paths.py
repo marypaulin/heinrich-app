@@ -71,15 +71,28 @@ def get_intermediate_invoice_path(project_number: str) -> Path:
     return path
 
 
+def get_offer_target_path(
+    project_dir: Path,
+    project_number: str,
+    config: Config,
+) -> Path:
+    """Create filepath for Angebot using filename template from config"""
+    filename = _format_filename(
+        config.filenames["ANGEBOT"],
+        project_number=project_number,
+    )
+    path = project_dir / filename
+    return path
+
+
 def get_delivery_target_path(
     project_dir: Path,
     project_number: str,
     config: Config,
 ) -> Path:
     """Create filepath for Lieferschein using filename template from config"""
-    template = config.filenames["LIEFERSCHEIN"]
     filename = _format_filename(
-        template,
+        config.filenames["LIEFERSCHEIN"],
         project_number=project_number,
     )
     path = project_dir / filename
@@ -93,9 +106,8 @@ def get_invoice_target_path(
     config: Config,
 ) -> Path:
     """Create filepath for Rechnung using filename template from config"""
-    template = config.filenames["RECHNUNG"]
     filename = _format_filename(
-        template,
+        config.filenames["RECHNUNG"],
         project_number=project_number,
         receipt_number=receipt_number,
     )
@@ -110,9 +122,8 @@ def get_order_target_path(
     config: Config,
 ) -> Path:
     """Create filepath for Auftragsbestätigung using filename template from config"""
-    template = config.filenames["AUFTRAG"]
     filename = _format_filename(
-        template,
+        config.filenames["AUFTRAG"],
         project_number=project_number,
         receipt_number=receipt_number,
     )

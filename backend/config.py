@@ -1,7 +1,6 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
 
 
 @dataclass(frozen=True)
@@ -14,12 +13,12 @@ class DocumentConfig:
 @dataclass(frozen=True)
 class Config:
     data_root: Path
-    hourly_rate_mapping: Dict[float, str]
+    hourly_rate_mapping: dict[float, str]
     hourly_rate_default: str
     date_format: str
     vat_rate: float
-    documents: Dict[str, DocumentConfig]
-    filenames: Dict[str, str]
+    documents: dict[str, DocumentConfig]
+    filenames: dict[str, str]
 
 
 def load_config(path: Path) -> Config:

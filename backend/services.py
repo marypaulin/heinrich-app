@@ -2,7 +2,6 @@ import logging
 from copy import deepcopy
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Dict, List
 
 from .calculations import calculate_sums_and_vat
 from .config import Config
@@ -20,6 +19,7 @@ from .paths import (
     get_delivery_target_path,
     get_intermediate_invoice_path,
     get_invoice_target_path,
+    get_offer_target_path,
     get_order_target_path,
 )
 from .pdfgen import render_pdf
@@ -36,7 +36,7 @@ PH_SUM_GROSS = "<Gessumme>"
 PH_DELIVERY_DATE = "<Lieferdatum>"
 
 
-def build_meta_mapping(data: DocMeta, config: Config) -> Dict[str, str]:
+def build_meta_mapping(data: DocMeta, config: Config) -> dict[str, str]:
     return {
         PH_DATE_TODAY: data.date_today.strftime(config.date_format),
         PH_PROJECT_NO: data.project_number,
@@ -48,7 +48,7 @@ def build_meta_mapping(data: DocMeta, config: Config) -> Dict[str, str]:
 
 def build_intermediate_mapping(
     data: IntermediateData, config: Config
-) -> Dict[str, str]:
+) -> dict[str, str]:
     t = data.totals
     return {
         PH_SUM_NET: format_price(t.sum_net),
@@ -58,17 +58,19 @@ def build_intermediate_mapping(
     }
 
 
-def generate_delivery_docx(
+def generate_offer_or_delivery_docx(
+    doc_key: str,
     project_number: str,
-    line_items: List[LineItem],
+    line_items: list[LineItem],
     target_path: Path,
     config: Config,
     messages: Messages,
+    log_labels: tuple[str, str],
 ) -> None:
     """Fill the Word template with CSV data and save as Lieferschein DOCX."""
 
     doc = load_template()
-    doc_config = config.documents["LIEFERSCHEIN"]
+    doc_config = config.documents[doc_key]
 
     # Set up meta data for delivery note
     today = date.today()
@@ -114,14 +116,14 @@ def generate_delivery_docx(
     save_docx(doc, target_path)
 
     display_path = target_path.name
-    logging.info(f"Generated delivery note: {display_path}")
-    messages.info(f"Lieferschein erzeugt: {display_path}")
+    logging.info(f"Generated {log_labels[0]}: {display_path}")
+    messages.info(f"{log_labels[1]} erzeugt: {display_path}")
 
 
 def generate_invoice_and_order_docx(
     project_number: str,
     receipt_number: str,
-    target_paths: Dict[str, Path],
+    target_paths: dict[str, Path],
     config: Config,
     messages: Messages,
 ) -> None:
@@ -175,27 +177,51 @@ def generate_invoice_and_order_docx(
     messages.info(f"Auftragsbestätigung erzeugt: {display_path}")
 
 
-def generate_delivery_note(
+def generate_offer(
     project_number: str,
-    line_items: List[LineItem],
+    line_items: list[LineItem],
+    project_dir: Path,
+    config: Config,
+) -> list[str]:
+    """Render Angebot in DOCX and PDF format"""
+    messages = Messages()
+    target_path = get_offer_target_path(project_dir, project_number, config)
+    generate_offer_or_delivery_docx(
+        doc_key="ANGEBOT",
+        project_number=project_number,
+        line_items=line_items,
+        target_path=target_path,
+        config=config,
+        messages=messages,
+        log_labels=("offer", "Angebot"),
+    )
+    render_pdf(target_path, messages)
+    return messages.items
+
+
+def generate_delivery(
+    project_number: str,
+    line_items: list[LineItem],
     project_dir: Path,
     config: Config,
 ) -> list[str]:
     """Render Lieferschein in DOCX and PDF format"""
     messages = Messages()
     target_path = get_delivery_target_path(project_dir, project_number, config)
-    generate_delivery_docx(
-        project_number,
-        line_items,
-        target_path,
-        config,
-        messages,
+    generate_offer_or_delivery_docx(
+        doc_key="LIEFERSCHEIN",
+        project_number=project_number,
+        line_items=line_items,
+        target_path=target_path,
+        config=config,
+        messages=messages,
+        log_labels=("delivery note", "Lieferschein"),
     )
     render_pdf(target_path, messages)
     return messages.items
 
 
-def generate_invoice_and_order_confirmation(
+def generate_invoice_and_order(
     project_number: str,
     receipt_number: str,
     project_dir: Path,

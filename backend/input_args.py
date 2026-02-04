@@ -7,6 +7,12 @@ PROJECT_NUMBER_RE = re.compile(r"\d{4}")
 
 
 @dataclass(frozen=True)
+class OfferArgs:
+    project_number: str
+    mode: Literal["offer"]
+
+
+@dataclass(frozen=True)
 class DeliveryArgs:
     project_number: str
     mode: Literal["delivery"]
@@ -19,12 +25,21 @@ class InvoiceArgs:
     receipt_number: str
 
 
-InputArgs = Union[DeliveryArgs, InvoiceArgs]
+InputArgs = Union[OfferArgs, DeliveryArgs, InvoiceArgs]
+
+
+def _validate_project_number(project_number: str) -> None:
+    if not PROJECT_NUMBER_RE.fullmatch(project_number):
+        raise ValueError("PROJECT_NUMBER must be exactly four digits")
+
+
+def create_offer_args(project_number: str) -> OfferArgs:
+    _validate_project_number(project_number)
+    return OfferArgs(project_number=project_number, mode="offer")
 
 
 def create_delivery_args(project_number: str) -> DeliveryArgs:
-    if not PROJECT_NUMBER_RE.fullmatch(project_number):
-        raise ValueError("PROJECT_NUMBER must be exactly four digits")
+    _validate_project_number(project_number)
     return DeliveryArgs(project_number=project_number, mode="delivery")
 
 

@@ -5,35 +5,46 @@ CLI Argument parsing and validation for heinrich-metallbau CLI.
 import argparse
 from typing import Iterable
 
-from .input_args import InputArgs, create_delivery_args, create_invoice_args
+from .input_args import (
+    InputArgs,
+    create_delivery_args,
+    create_invoice_args,
+    create_offer_args,
+)
 
 
 def parse_cli_args(argv: Iterable[str] | None = None) -> InputArgs:
     parser = argparse.ArgumentParser(
         description="Generate documents from CSV and Word template."
     )
-    parser.add_argument("project_number", type=str, help="4-digit project number")
     parser.add_argument(
-        "mode",
+        "-m",
+        "--mode",
         type=str.lower,
-        choices=["delivery", "invoice"],
-        help="Mode: delivery or invoice",
+        choices=["offer", "delivery", "invoice"],
+        help="Mode: offer, delivery or invoice",
     )
     parser.add_argument(
-        "receipt_number",
+        "-p", "--project-number", type=str, required=True, help="4-digit project number"
+    )
+    parser.add_argument(
+        "-r",
+        "--receipt-number",
         type=str,
-        nargs="?",
+        required=False,
         default=None,
         help="Receipt number (required for invoice)",
     )
 
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    if args.mode == "delivery" and args.receipt_number:
-        parser.error("RECEIPT_NUMBER should not be provided for delivery mode")
+    if args.mode in ("offer", "delivery") and args.receipt_number is not None:
+        parser.error("RECEIPT_NUMBER should not be provided for offer or delivery mode")
 
     try:
-        if args.mode == "delivery":
+        if args.mode == "offer":
+            return create_offer_args(args.project_number)
+        elif args.mode == "delivery":
             return create_delivery_args(args.project_number)
         else:
             return create_invoice_args(args.project_number, args.receipt_number)

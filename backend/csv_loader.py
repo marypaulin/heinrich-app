@@ -5,7 +5,6 @@ CSV loading utility
 import csv
 from datetime import date, datetime
 from pathlib import Path
-from typing import List
 
 from .config import Config
 from .models import CsvRow
@@ -45,7 +44,7 @@ def _parse_float(i: int, value: str) -> float:
         raise ValueError(f"Invalid numeric value in row {i}: {value}")
 
 
-def load_csv_data(csv_path: Path, config: Config) -> List[CsvRow]:
+def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
     """
     Load and parse a CSV file into a list of CsvRow objects.
 

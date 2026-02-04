@@ -5,7 +5,6 @@ Word document generation.
 import logging
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List
 
 from docx import Document
 from docx.document import Document as DocxDocument  # Only for type hints
@@ -42,7 +41,7 @@ def load_intermediate_template(path: Path) -> DocxDocument:
         )
 
 
-def replace_placeholders(doc: DocxDocument, mapping: Dict[str, str]) -> None:
+def replace_placeholders(doc: DocxDocument, mapping: dict[str, str]) -> None:
     """Replace placeholders in all paragraphs of the document.
 
     Note: This function is generic."""
@@ -70,7 +69,7 @@ def _format_cell(cell, font_name="Calibri", font_size=9, bold=True):
             run.font.bold = bold
 
 
-def fill_table_with_line_items(doc: DocxDocument, line_items: List[LineItem]) -> None:
+def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) -> None:
     """Fill the main table in the document with data.
 
     Note: This function is business-logic-specific."""

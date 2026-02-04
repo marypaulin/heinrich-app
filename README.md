@@ -38,18 +38,39 @@ Das Heinrich Tool kann unter Windows als lokale Web-App genutzt werden, die per 
 
 Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestartet.
 
+### Angebot erzeugen
+
+```
+python cli.py --mode offer --project-number 1235
+```
+or short
+```
+python cli.py -m offer -p 1235
+```
+
+---
+
 ### Lieferschein erzeugen
 
 ```
-python cli.py 1235 delivery
+python cli.py --mode delivery --project-number 1235
 ```
+or short
+```
+python cli.py -m delivery -p 1235
+```
+
 
 ---
 
 ### Rechnung & Auftragsbestätigung erzeugen
 
 ```
-python cli.py 1235 invoice 4504049161
+python cli.py --mode invoice --project-number 1235 --receipt-number 4504049161
+```
+or short
+```
+python cli.py -m invoice -p 1235 -r 4504049161
 ```
 
 ---
@@ -136,19 +157,24 @@ Project numbers:
 - 1253
 
 ```
-python cli.py 1218 delivery
-python cli.py 1218 invoice 4504020708
+python cli.py -m offer -p 1218
+python cli.py -m delivery -p 1218
+python cli.py -m invoice -p 1218 -r 4504020708
 
-python cli.py 1223 delivery
-python cli.py 1223 invoice 4504030989
+python cli.py -m offer -p 1223
+python cli.py -m delivery -p 1223
+python cli.py -m invoice -p 1223 -r 4504030989
 
-python cli.py 1235 delivery
-python cli.py 1235 invoice 4504049161
+python cli.py -m offer -p 1235
+python cli.py -m delivery -p 1235
+python cli.py -m invoice -p 1235 -r 4504049161
 
-python cli.py 1236 delivery
-python cli.py 1236 invoice 4504059903
+python cli.py -m offer -p 1236
+python cli.py -m delivery -p 1236
+python cli.py -m invoice -p 1236 -r 4504059903
 
-python cli.py 1253 delivery
-python cli.py 1253 invoice 4504072524
+python cli.py -m offer -p 1253
+python cli.py -m delivery -p 1253
+python cli.py -m invoice -p 1253 -r 4504072524
 
 ```

@@ -4,10 +4,7 @@ from backend.csv_loader import load_csv_data
 from backend.csv_transformer import csv_rows_to_line_items
 from backend.input_args import create_delivery_args, create_invoice_args
 from backend.paths import get_latest_csv_path, get_project_dir
-from backend.services import (
-    generate_delivery_note,
-    generate_invoice_and_order_confirmation,
-)
+from backend.services import generate_delivery, generate_invoice_and_order
 from state import get_config, initialize_session_state
 
 st.set_page_config(
@@ -55,7 +52,7 @@ def run_delivery(config):
         csv_rows = load_csv_data(csv_path, config)
         line_items, messages = csv_rows_to_line_items(csv_rows, config)
         st.session_state.delivery_info.extend(messages)
-        messages = generate_delivery_note(
+        messages = generate_delivery(
             args.project_number,
             line_items,
             project_dir,
@@ -93,7 +90,7 @@ def run_invoice(config):
             args.project_number,
         )
         st.session_state.invoice_info.extend(messages)
-        messages = generate_invoice_and_order_confirmation(
+        messages = generate_invoice_and_order(
             args.project_number,
             args.receipt_number,
             project_dir,

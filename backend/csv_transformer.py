@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List
+from typing import Iterable
 
 from backend.messages import Messages
 
@@ -26,7 +26,7 @@ def _get_hourly_description(
 def csv_rows_to_line_items(
     csv_rows: Iterable[CsvRow],
     config: Config,
-) -> tuple[List[LineItem], list[str]]:
+) -> tuple[list[LineItem], list[str]]:
     """
     Transform CsvRow objects into LineItem domain objects.
 
@@ -70,7 +70,7 @@ def csv_rows_to_line_items(
         if not order_number.isdigit() or len(order_number) != 8:
             logging.info(
                 f"Skipping csv_row {csv_row.row_number} "
-                f"with invalid order number.: {order_number}"
+                f"with invalid order number: {order_number}"
             )
             messages.warning(
                 f"Überspringe Zeile {csv_row.row_number} "
