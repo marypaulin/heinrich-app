@@ -2,9 +2,17 @@ import streamlit as st
 
 from backend.csv_loader import load_csv_data
 from backend.csv_transformer import csv_rows_to_line_items
-from backend.input_args import create_delivery_args, create_invoice_args
+from backend.input_args import (
+    create_delivery_args,
+    create_invoice_args,
+    create_offer_args,
+)
 from backend.paths import get_latest_csv_path, get_project_dir
-from backend.services import generate_delivery, generate_invoice_and_order
+from backend.services import (
+    generate_delivery,
+    generate_invoice_and_order,
+    generate_offer,
+)
 from state import get_config, initialize_session_state
 
 st.set_page_config(
@@ -25,6 +33,43 @@ def suppress_round_corners():
         """,
         unsafe_allow_html=True,
     )
+
+
+def run_offer(config):
+    # Reset log messages each time
+    st.session_state.offer_info = []
+    st.session_state.offer_error = None
+
+    project_number_offer = st.session_state.get("project_number_offer", "").strip()
+
+    # Catch error if button is clicked without project number
+    if not project_number_offer:
+        st.session_state.offer_info.append("Bitte eine Projektnummer eingeben.")
+        return
+
+    try:
+        # Find project dir, read csv, and generate offer
+        # Log messages from backend for each step
+        args = create_offer_args(project_number_offer)
+        project_dir, messages = get_project_dir(config.data_root, args.project_number)
+        st.session_state.offer_info.extend(messages)
+        csv_path, messages = get_latest_csv_path(project_dir, config)
+        st.session_state.offer_info.extend(messages)
+        csv_rows = load_csv_data(csv_path, config)
+        line_items, messages = csv_rows_to_line_items(csv_rows, config)
+        st.session_state.offer_info.extend(messages)
+        messages = generate_offer(
+            args.project_number,
+            line_items,
+            project_dir,
+            config,
+        )
+        st.session_state.offer_info.extend(messages)
+        st.toast("Angebot erzeugt", icon="✅")
+
+    except Exception as e:
+        st.session_state.offer_error = f"Error: {str(e)}"
+        st.toast("Fehler beim Erzeugen", icon="❌")
 
 
 def run_delivery(config):
@@ -115,13 +160,43 @@ def app():
         st.image("assets/logo.png")
 
     # Title
-    st.title("Heinrich App")
+    st.title("RHI Projekte")
 
+    # Introduction
     st.markdown(
-        "Erstelle **Lieferscheine**, **Auftragsbestätigungen** und "
-        "**Rechnungen** direkt aus deinen Zeiterfassungsdaten - "
-        "sauber formatiert, mit nur wenigen Klicks 📄"
+        "Erstelle **Angebote**, **Lieferscheine**, **Rechnungen** und **Auftragsbestätigungen** "
+        "für RHI direkt aus deinen Zeiterfassungsdaten.\n"
+        "Die Konfiguration erfolgt über die Datei `heinrich-app/config.json`. "
     )
+
+    # Angebot
+    st.subheader("Angebot")
+
+    with st.form("offer_form"):
+        col1, _ = st.columns(2)
+
+        with col1:
+            st.text_input(
+                "Bitte Projektnummer eingeben",
+                key="project_number_offer",
+                placeholder="zB 1235",
+            )
+
+        st.form_submit_button(
+            "Angebot erzeugen",
+            on_click=run_offer,
+            args=(config,),
+        )
+
+        # Display log messages under submit button
+        if st.session_state.offer_info:
+            st.code(
+                "\n".join(st.session_state.offer_info),
+                language="text",
+            )
+
+        if st.session_state.offer_error:
+            st.error(st.session_state.offer_error)
 
     # Lieferschein
     st.subheader("Lieferschein")
@@ -153,7 +228,7 @@ def app():
             st.error(st.session_state.delivery_error)
 
     # Rechnung / Auftragsbestätigung
-    st.subheader("Rechnung / Auftragsbestätigung")
+    st.subheader("Rechnung & Auftragsbestätigung")
 
     with st.form("invoice_form"):
         col1, col2 = st.columns(2)

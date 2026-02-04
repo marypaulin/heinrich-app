@@ -10,6 +10,10 @@ def get_config() -> Config:
 
 def initialize_session_state() -> None:
     # Session state for UI messages
+    if "offer_info" not in st.session_state:
+        st.session_state.offer_info = []
+    if "offer_error" not in st.session_state:
+        st.session_state.offer_error = None
     if "delivery_info" not in st.session_state:
         st.session_state.delivery_info = []
     if "delivery_error" not in st.session_state:
