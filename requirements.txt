@@ -1,3 +1,4 @@
 docx2pdf==0.1.8
 python_docx==1.2.0
 streamlit==1.52.1
+pywin32; platform_system == "Windows"

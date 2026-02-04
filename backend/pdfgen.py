@@ -1,18 +1,22 @@
+import contextlib
 import logging
 import platform
 import shutil
 import subprocess
+import threading
 from pathlib import Path
 
 from docx2pdf import convert
 
 from .messages import Messages
 
+# Ensure Word conversion runs strictly one-at-a-time (Streamlit reruns / double clicks can parallelize)
+_WORD_CONVERT_LOCK = threading.Lock()
+
 
 def render_pdf(docx_path: Path, messages: Messages) -> None:
     """Convert DOCX file to PDF using Word on Windows or LibreOffice on Linux."""
 
-    # Derive output PDF path from the DOCX path
     pdf_path = docx_path.with_suffix(".pdf")
     system = platform.system()
 
@@ -20,7 +24,7 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
     # Windows: Microsoft Word via docx2pdf
     # --------------------
     if system == "Windows":
-        # Häufigster Fehler: bestehende / geöffnete PDF blockiert die Neuerzeugung
+        # Most common failure: existing/open PDF blocks overwrite
         if pdf_path.exists():
             try:
                 pdf_path.unlink()
@@ -31,19 +35,31 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
                 logging.exception("PDF locked / cannot delete: %s", pdf_path)
                 return
 
+        # COM init is required per-thread on Windows. Streamlit may execute in a thread without COM initialized.
         try:
-            # Robuster als output_file: Ausgabe in Zielordner
-            convert(str(docx_path), str(docx_path.parent))
+            import pythoncom  # type: ignore  # provided by pywin32
+        except Exception:
+            pythoncom = None
 
-            # docx2pdf kann still scheitern -> Existenz prüfen
-            if not pdf_path.exists():
-                messages.error(
-                    "PDF wurde nicht erzeugt. "
-                    "Bitte prüfen: Word installiert, Datei nicht geöffnet, "
-                    "keine hängende WINWORD.EXE."
-                )
-                logging.error("docx2pdf finished without creating pdf: %s", pdf_path)
-                return
+        try:
+            with _WORD_CONVERT_LOCK:
+                if pythoncom is not None:
+                    pythoncom.CoInitialize()
+
+                # More robust: output directory instead of output file
+                convert(str(docx_path), str(docx_path.parent))
+
+                # docx2pdf can fail silently -> verify output exists
+                if not pdf_path.exists():
+                    messages.error(
+                        "PDF wurde nicht erzeugt. "
+                        "Bitte prüfen: Word installiert, Datei nicht geöffnet, "
+                        "keine hängende WINWORD.EXE."
+                    )
+                    logging.error(
+                        "docx2pdf finished without creating pdf: %s", pdf_path
+                    )
+                    return
 
             messages.info(f"PDF erzeugt: {pdf_path.name}")
             logging.info("Generated PDF document via Word: %s", pdf_path.name)
@@ -53,6 +69,11 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
             messages.error(f"PDF-Erzeugung fehlgeschlagen: {e}")
             logging.exception("Word-based PDF conversion failed")
             return
+
+        finally:
+            if pythoncom is not None:
+                with contextlib.suppress(Exception):
+                    pythoncom.CoUninitialize()
 
     # --------------------
     # Linux: LibreOffice (headless)
@@ -88,8 +109,7 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
 
             if not pdf_path.exists():
                 messages.error(
-                    "PDF wurde nicht erzeugt. "
-                    "LibreOffice-Konvertierung fehlgeschlagen."
+                    "PDF wurde nicht erzeugt. LibreOffice-Konvertierung fehlgeschlagen."
                 )
                 logging.error("LibreOffice finished without creating pdf: %s", pdf_path)
                 return
