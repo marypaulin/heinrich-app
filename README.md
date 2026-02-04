@@ -4,11 +4,39 @@ Dieses Programm unterstützt die Erstellung von **Lieferscheinen**, **Auftragsbe
 
 ---
 
-## Voraussetzungen
+## Download via Git
+
+1. Klicke auf den grünen Button **Code** und kopiere die **HTTPS-URL** des Repositories.
+
+2. Öffne ein Terminal
+   (z. B. PowerShell unter Windows oder ein normales Terminal unter Linux/macOS).
+
+3. Navigiere in den Ordner, in dem das Tool gespeichert werden soll:
+
+
+```
+cd path/to/folder/
+```
+
+4. Repository klonen:
+
+
+```
+git clone https://github.com/USER/heinrich-app.git
+```
+
+
+Nach dem Klonen befindet sich das Projekt im neu erstellten Ordner `heinrich-app`.
+
+Hinweis:
+Für das reine Klonen eines öffentlichen Repositories ist kein GitHub-Account und kein SSH-Key erforderlich.
+
+---
+
+## Voraussetzungen für die lokale Nutzung
 
 * Installiertes **Python 3.12** oder neuer
   (prüfbar in der Kommandozeile mit `python --version`)
-* Installierte Abhängigkeiten: `pip install -r requirements.txt`
 * Ein vorhandenes **Projektverzeichnis** mit den Projektordnern (`/Pfad/zu/RHI/`)
 * Korrekt gesetzter Pfad in der Konfigurationsdatei: `"DATA_ROOT": "/Pfad/zu/RHI/"`
 
@@ -37,6 +65,10 @@ Das Heinrich Tool kann unter Windows als lokale Web-App genutzt werden, die per 
 ## Nutzung als CLI-Tool
 
 Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestartet.
+
+Voraussetzungen:
+* Virtuelle Umgebung: `python -m venv .venv`
+* Installierte Abhängigkeiten: `pip install -r requirements.txt`
 
 ### Angebot erzeugen
 
