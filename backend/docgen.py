@@ -12,6 +12,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.opc.exceptions import PackageNotFoundError
 from docx.shared import Pt
 from docx.table import _Row
+from docx.text.paragraph import Paragraph
 
 from .formatting import format_price, format_quantity
 from .models import LineItem
@@ -58,6 +59,110 @@ def replace_placeholders(doc: DocxDocument, mapping: dict[str, str]) -> None:
                         for placeholder, value in mapping.items():
                             if placeholder in run.text:
                                 run.text = run.text.replace(placeholder, value)
+
+
+def _replace_placeholder_across_runs(
+    paragraph: Paragraph,
+    placeholder: str,
+    replacement: str,
+) -> bool:
+    """
+    Replace a placeholder string inside a paragraph even if the placeholder
+    is split across multiple Word runs.
+
+    Background:
+    Word may arbitrarily split text like "<Lieferdatum>" into several runs
+    (e.g. "<" + "Lie" + "ferdatum" + ">"). Run-based replacement therefore
+    fails for such placeholders.
+
+    Behavior:
+    - Concatenates all run texts to locate the placeholder.
+    - Determines which runs contain the start and end of the placeholder.
+    - Removes the placeholder text across all affected runs.
+    - Inserts the replacement text once, preserving surrounding text.
+    - Keeps paragraph structure and formatting as intact as possible by
+      writing the result into the first affected run.
+
+    Returns:
+    - True if the placeholder was found and replaced.
+    - False if the placeholder does not occur in this paragraph.
+    """
+    runs = paragraph.runs
+    if not runs:
+        return False
+
+    full = "".join(r.text for r in runs)
+    idx = full.find(placeholder)
+    if idx == -1:
+        return False
+
+    start = idx
+    end = idx + len(placeholder)
+
+    # Find which runs contain [start, end)
+    pos = 0
+    start_run = None
+    end_run = None
+    start_off = 0
+    end_off = 0
+
+    for i, r in enumerate(runs):
+        run_len = len(r.text)
+        next_pos = pos + run_len
+
+        if start_run is None and start < next_pos:
+            start_run = i
+            start_off = start - pos
+
+        if start_run is not None and end <= next_pos:
+            end_run = i
+            end_off = end - pos
+            break
+
+        pos = next_pos
+
+    if start_run is None or end_run is None:
+        return False  # should not happen, but safe guard
+
+    # Rewrite texts
+    prefix = runs[start_run].text[:start_off]
+    suffix = runs[end_run].text[end_off:]
+
+    # Clear all runs fully/partially covered by placeholder
+    for i in range(start_run, end_run + 1):
+        runs[i].text = ""
+
+    # Put everything into the start_run to keep formatting stable
+    runs[start_run].text = prefix + replacement + suffix
+
+    return True
+
+
+def replace_delivery_date(doc: DocxDocument, mapping: dict[str, str]) -> None:
+    """
+    Replace the delivery date placeholder in a document.
+
+    Business context:
+    The delivery date (e.g. "<Lieferdatum>") is a known special placeholder
+    that may be split across multiple Word runs due to template formatting.
+    Standard placeholder replacement is not reliable for this case.
+
+    Behavior:
+    - Expects a mapping with exactly one entry:
+      { "<Lieferdatum>": "<formatted delivery date>" }.
+    - Iterates over all body paragraphs in the document.
+    - Applies a run-spanning replacement strategy to safely replace the
+      placeholder regardless of how Word split it internally.
+    - Does not touch other placeholders or paragraph formatting.
+
+    Notes:
+    - This function is intentionally specialized and not generic.
+    - It should be called after normal placeholder replacement.
+    """
+    for placeholder, value in mapping.items():
+        for paragraph in doc.paragraphs:
+            if placeholder in paragraph.text:
+                _replace_placeholder_across_runs(paragraph, placeholder, value)
 
 
 def _format_cell(cell, font_name="Calibri", font_size=9, bold=True):

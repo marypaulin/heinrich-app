@@ -40,9 +40,3 @@ class DocMeta:
     doctype: str
     header: str
     date_today: date
-
-
-@dataclass(frozen=True)
-class IntermediateData:
-    totals: Totals
-    delivery_date: date

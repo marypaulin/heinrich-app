@@ -9,12 +9,13 @@ from .docgen import (
     fill_table_with_line_items,
     load_intermediate_template,
     load_template,
+    replace_delivery_date,
     replace_placeholders,
     save_docx,
 )
 from .formatting import format_price
 from .messages import Messages
-from .models import DocMeta, IntermediateData, LineItem
+from .models import DocMeta, LineItem, Totals
 from .paths import (
     get_delivery_target_path,
     get_intermediate_invoice_path,
@@ -46,15 +47,17 @@ def build_meta_mapping(data: DocMeta, config: Config) -> dict[str, str]:
     }
 
 
-def build_intermediate_mapping(
-    data: IntermediateData, config: Config
-) -> dict[str, str]:
-    t = data.totals
+def build_totals_mapping(totals: Totals) -> dict[str, str]:
     return {
-        PH_SUM_NET: format_price(t.sum_net),
-        PH_VAT: format_price(t.vat),
-        PH_SUM_GROSS: format_price(t.sum_gross),
-        PH_DELIVERY_DATE: data.delivery_date.strftime(config.date_format),
+        PH_SUM_NET: format_price(totals.sum_net),
+        PH_VAT: format_price(totals.vat),
+        PH_SUM_GROSS: format_price(totals.sum_gross),
+    }
+
+
+def build_delivery_date_mapping(delivery_date: date, config: Config) -> dict[str, str]:
+    return {
+        PH_DELIVERY_DATE: delivery_date.strftime(config.date_format),
     }
 
 
@@ -67,7 +70,7 @@ def generate_offer_or_delivery_docx(
     messages: Messages,
     log_labels: tuple[str, str],
 ) -> None:
-    """Fill the Word template with CSV data and save as Lieferschein DOCX."""
+    """Fill Word template with CSV data and save as Angebot or Lieferschein DOCX."""
 
     doc = load_template()
     doc_config = config.documents[doc_key]
@@ -89,25 +92,21 @@ def generate_offer_or_delivery_docx(
     delivery_days = d if d is not None else 21
     delivery_date = today + timedelta(days=delivery_days)
 
-    intermediate_data = IntermediateData(
-        totals=totals,
-        delivery_date=delivery_date,
-    )
-
     # Phase 1: Fill table with line items
     fill_table_with_line_items(doc, line_items)
 
-    # Phase 2: Fill intermediate placeholders + save intermediate template
+    # Phase 2: Fill intermediate data + save intermediate template
     replace_placeholders(
         doc,
-        build_intermediate_mapping(intermediate_data, config),
+        build_totals_mapping(totals),
     )
+    replace_delivery_date(doc, build_delivery_date_mapping(delivery_date, config))
 
     intermediate_path = get_intermediate_invoice_path(project_number)
     intermediate_path.parent.mkdir(parents=True, exist_ok=True)
     save_docx(doc, intermediate_path)
 
-    # Phase 3: Fill delivery note placeholders + save final
+    # Phase 3: Fill final placeholders + save final document
     replace_placeholders(
         doc,
         build_meta_mapping(meta_data, config),
