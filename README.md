@@ -1,10 +1,36 @@
 # Automatisierung des Rechnungsprozesses für Heinrich Metallbau
 
-Dieses Programm unterstützt die Erstellung von **Lieferscheinen**, **Auftragsbestätigungen** und **Rechnungen** aus den Zeiterfassungsdaten von Heinrich Metallbau.
+Dieses Programm unterstützt die Erstellung von **Angeboten**, **Lieferscheinen**, **Auftragsbestätigungen** und **Rechnungen** aus den Zeiterfassungsdaten von Heinrich Metallbau.
 
 ---
 
-## Git Installation (Windows)
+## 1. Python Installation (Windows)
+
+Für die Nutzung des Tools wird Python 3.12.6 benötigt. Empfohlen wird die Installation über den offiziellen Python-Installer.
+
+1. Öffne die offizielle Python-Website:
+   [https://www.python.org](https://www.python.org)
+
+2. Klicke auf **Downloads** und lade die richtige Python-Version für Windows herunter (Python 3.12.6).
+
+3. Starte den Installer.
+   **Wichtig:** Aktiviere im ersten Dialog die Option
+   **“Add Python to PATH”**.
+
+4. Klicke auf **Install Now** und schließe die Installation ab.
+
+5. Öffne anschließend eine neue PowerShell.
+
+6. Installation prüfen:
+   `python --version`
+   oder alternativ:
+   `py --version`
+
+Wenn eine Versionsnummer angezeigt wird, ist Python korrekt installiert.
+
+---
+
+## 2. Git Installation (Windows)
 
 1. Öffne die offizielle Git-Website:
    [https://git-scm.com](https://git-scm.com)
@@ -23,36 +49,9 @@ Wenn eine Versionsnummer angezeigt wird, ist Git korrekt installiert und einsatz
 
 ---
 
-## Python Installation (Windows)
+## 3. Download der App via Git
 
-Für die Nutzung des Tools wird Python benötigt. Empfohlen wird die Installation über den offiziellen Python-Installer.
-
-1. Öffne die offizielle Python-Website:
-   [https://www.python.org](https://www.python.org)
-
-2. Klicke auf **Downloads** und lade die aktuelle Python-Version für Windows herunter (Python 3.x).
-
-3. Starte den Installer.
-   **Wichtig:** Aktiviere im ersten Dialog die Option
-   **“Add Python to PATH”**.
-
-4. Klicke auf **Install Now** und schließe die Installation ab.
-
-5. Öffne anschließend eine neue PowerShell.
-
-6. Installation prüfen:
-   `python --version`
-   oder alternativ:
-   `py --version`
-
-Wenn eine Versionsnummer angezeigt wird, ist Python korrekt installiert.
-
-
----
-
-## Download via Git
-
-1. Klicke auf den grünen Button **Code** und kopiere die **HTTPS-URL** des Repositories.
+1. In diesem Github-Repository, klicke oben rechts auf den grünen Button **Code** und kopiere die **HTTPS-URL** des Repositories.
 
 2. Öffne ein Terminal
    (z. B. PowerShell unter Windows oder ein normales Terminal unter Linux/macOS).
@@ -79,18 +78,24 @@ Für das reine Klonen eines öffentlichen Repositories ist kein GitHub-Account u
 
 ---
 
-## Voraussetzungen für die lokale Nutzung
+## 4. Konfiguration
 
-* Installiertes **Python 3.12** oder neuer
-  (prüfbar in der Kommandozeile mit `python --version`)
-* Ein vorhandenes **Projektverzeichnis** mit den Projektordnern (`/Pfad/zu/RHI/`)
-* Korrekt gesetzter Pfad in der Konfigurationsdatei: `"DATA_ROOT": "/Pfad/zu/RHI/"`
+
+Für die Nutzung des Tools werden zwei weitere Dateien benötigt, die sich nicht im Repository befinden:
+
+- `Vordruck.docx` (Word-Template für alle Outputdokumente)
+- `config.json` (Konfigurationsdatei mit Stundenlohn, Mehrwertsteuersatz etc.)
+
+Diese erhält der Nutzer des Tools per Mail. Für die korrekte Nutzung:
+
+1. Erstelle im Projektordner einen neuen Ordner `templates` und lege das Word-Template `Vordruck.docx` hier ab.
+2. Platziere die `config.json` im Projektordner (auf Root-Ebene) und konfiguriere den Pfad zum Projektverzeichnis: `"DATA_ROOT": "/Pfad/zu/RHI/"`
 
 ---
 
-## Nutzung als App (Windows)
+## 5. Nutzung als App (Windows)
 
-Das Heinrich Tool kann unter Windows als lokale Web-App genutzt werden, die per Doppelklick gestartet wird.
+Das Tool kann unter Windows als lokale Web-App genutzt werden, die per Doppelklick gestartet wird.
 
 ### Einrichtung
 
@@ -102,7 +107,7 @@ Das Heinrich Tool kann unter Windows als lokale Web-App genutzt werden, die per 
 
 ### Nutzung
 
-* Ein Doppelklick auf die Desktopverknüpfung startet die Heinrich App.
+* Ein Doppelklick auf die Desktopverknüpfung installiert bei erster Nutzung die notwendigen Packages in einer Virtuellen Umgebung. (Dies kann eine Weile dauern). Dann startet die Heinrich App.
 * Die App öffnet sich automatisch im Standardbrowser.
 * Ist die App bereits geöffnet, wird lediglich ein weiterer Browser-Tab geöffnet.
 
@@ -153,18 +158,18 @@ python cli.py -m invoice -p 1235 -r 4504049161
 
 ---
 
-## Dokumenten-Workflows
+## 6. Dokumenten-Workflows
 
 Das Tool arbeitet mit klar getrennten Modi. Jeder Modus entspricht einem eigenen Verarbeitungspfad und einem definierten Ergebnis.
 
 Zentral ist ein **zweistufiger Prozess**:
 
-1. Erzeugung eines Lieferscheins inklusive Tabellenbefüllung und Berechnung
+1. Erzeugung eines Angebots oder Lieferscheins inklusive Tabellenbefüllung und Berechnung
 2. Ableitung von Rechnung und Auftragsbestätigung aus einem gespeicherten Zwischenstand
 
 ---
 
-### Modus `delivery` – Lieferschein erzeugen
+### Modus `offer` oder `delivery` – Angebot oder Lieferschein erzeugen
 
 **Eingaben**
 
@@ -179,14 +184,14 @@ Zentral ist ein **zweistufiger Prozess**:
 4. Die Positionstabelle wird mit den Line Items befüllt.
 5. Ein Teil der Platzhalter wird gesetzt (z. B. Summen, Termine).
 6. Ein **Intermediate Template** wird gespeichert.
-7. Die restlichen Lieferschein-Platzhalter werden gesetzt.
-8. Der Lieferschein wird als DOCX gespeichert.
+7. Die restlichen Angebots- oder Lieferschein-Platzhalter werden gesetzt.
+8. Das finale Dokument wird als DOCX gespeichert.
 9. Zusätzlich wird eine PDF-Version erzeugt.
 
 **Ergebnisse**
 
-* `Lieferschein Nr. <project_number>.docx`
-* `Lieferschein Nr. <project_number>.pdf`
+* `Angebot/Lieferschein Nr. <project_number>.docx`
+* `Angebot/Lieferschein Nr. <project_number>.pdf`
 * Intermediate Template (intern, Grundlage für weitere Dokumente)
 
 ---
@@ -217,14 +222,15 @@ Zentral ist ein **zweistufiger Prozess**:
 
 ---
 
-## Geplante Erweiterungen (Ausblick)
+## 7. Geplante Erweiterungen (Ausblick)
 
-* UI-basierte Erfassung von Positionen und Erzeugung von Angeboten
+* UI-basierte Erfassung von Positionen zur Erzeugung von maßgeschneiderten Angeboten
 * Generierung von E-Rechnungen (z. B. XRechnung / ZUGFeRD)
+* Anpassung der Konfigurationsdatei über das UI
 
 ---
 
-## Test Cases
+## 8. Test Cases
 
 Project numbers:
 
