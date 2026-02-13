@@ -41,10 +41,14 @@ def load_config(path: Path) -> Config:
     documents_raw = raw["DOCUMENTS"]
     documents = {}
     for key, value in documents_raw.items():
+        if key in ["ANGEBOT", "LIEFERSCHEIN"]:
+            delivery_days = value.get("DELIVERY_DAYS", 21)
+        else:
+            delivery_days = None
         documents[key] = DocumentConfig(
             doctype=value["DOCTYPE"],
             header=value["HEADER"],
-            delivery_days=value.get("DELIVERY_DAYS"),
+            delivery_days=delivery_days,
         )
 
     filenames = raw["FILENAMES"]

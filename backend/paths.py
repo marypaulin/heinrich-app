@@ -61,7 +61,7 @@ def get_intermediate_project_dir(project_number: str) -> Path:
     return path
 
 
-def get_intermediate_invoice_path(project_number: str) -> Path:
+def get_intermediate_template_path(project_number: str) -> Path:
     """templates/intermediate/<project_number>/Vordruck_Rechnung_<project_number>.docx"""
     filename = _format_filename(
         INTERMEDIATE_FILENAME,

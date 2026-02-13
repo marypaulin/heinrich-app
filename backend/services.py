@@ -12,53 +12,17 @@ from .docgen import (
     replace_delivery_date,
     replace_placeholders,
     save_docx,
+    save_intermediate_template,
 )
-from .formatting import format_price
 from .messages import Messages
-from .models import DocMeta, LineItem, Totals
+from .models import DocxDeliveryDate, DocxMeta, LineItem
 from .paths import (
     get_delivery_target_path,
-    get_intermediate_invoice_path,
     get_invoice_target_path,
     get_offer_target_path,
     get_order_target_path,
 )
 from .pdfgen import render_pdf
-
-PH_DATE_TODAY = "<Datum heute>"
-PH_PROJECT_NO = "<Lfd Nr.>"
-PH_RECEIPT_NO = "<Belegnr>"
-PH_DOCTYPE = "<Betreffart>"
-PH_HEADER = "<Header>"
-
-PH_SUM_NET = "<Summe>"
-PH_VAT = "<Ust>"
-PH_SUM_GROSS = "<Gessumme>"
-PH_DELIVERY_DATE = "<Lieferdatum>"
-
-
-def build_meta_mapping(data: DocMeta, config: Config) -> dict[str, str]:
-    return {
-        PH_DATE_TODAY: data.date_today.strftime(config.date_format),
-        PH_PROJECT_NO: data.project_number,
-        PH_RECEIPT_NO: data.receipt_number or "",
-        PH_DOCTYPE: data.doctype,
-        PH_HEADER: data.header,
-    }
-
-
-def build_totals_mapping(totals: Totals) -> dict[str, str]:
-    return {
-        PH_SUM_NET: format_price(totals.sum_net),
-        PH_VAT: format_price(totals.vat),
-        PH_SUM_GROSS: format_price(totals.sum_gross),
-    }
-
-
-def build_delivery_date_mapping(delivery_date: date, config: Config) -> dict[str, str]:
-    return {
-        PH_DELIVERY_DATE: delivery_date.strftime(config.date_format),
-    }
 
 
 def generate_offer_or_delivery_docx(
@@ -75,10 +39,10 @@ def generate_offer_or_delivery_docx(
     doc = load_template()
     doc_config = config.documents[doc_key]
 
-    # Set up meta data for delivery note
+    # Set up meta data
     today = date.today()
 
-    meta_data = DocMeta(
+    meta_data = DocxMeta(
         project_number=project_number,
         receipt_number=None,
         doctype=doc_config.doctype,
@@ -88,28 +52,26 @@ def generate_offer_or_delivery_docx(
 
     # Set up intermediate data
     totals = calculate_sums_and_vat(line_items, config)
-    d = doc_config.delivery_days
-    delivery_days = d if d is not None else 21
-    delivery_date = today + timedelta(days=delivery_days)
+    assert doc_config.delivery_days is not None
+    delivery_days = doc_config.delivery_days
+    delivery_date = DocxDeliveryDate(today + timedelta(days=delivery_days))
 
     # Phase 1: Fill table with line items
     fill_table_with_line_items(doc, line_items)
 
-    # Phase 2: Fill intermediate data + save intermediate template
+    # Phase 2: Fill totals and delivery date + save intermediate template
     replace_placeholders(
         doc,
-        build_totals_mapping(totals),
+        totals.to_mapping(),
     )
-    replace_delivery_date(doc, build_delivery_date_mapping(delivery_date, config))
+    replace_delivery_date(doc, delivery_date.to_mapping(config.date_format))
 
-    intermediate_path = get_intermediate_invoice_path(project_number)
-    intermediate_path.parent.mkdir(parents=True, exist_ok=True)
-    save_docx(doc, intermediate_path)
+    save_intermediate_template(project_number, doc)
 
-    # Phase 3: Fill final placeholders + save final document
+    # Phase 3: Fill meta data + save final document
     replace_placeholders(
         doc,
-        build_meta_mapping(meta_data, config),
+        meta_data.to_mapping(config.date_format),
     )
 
     save_docx(doc, target_path)
@@ -128,11 +90,8 @@ def generate_invoice_and_order_docx(
 ) -> None:
     """Generate Rechnung and Auftragsbestaetigung DOCX from intermediate template."""
 
-    intermediate_path = get_intermediate_invoice_path(project_number)
-    doc = load_intermediate_template(intermediate_path)
-
-    doc_invoice = deepcopy(doc)
-    doc_order = deepcopy(doc)
+    doc_invoice = load_intermediate_template(project_number)
+    doc_order = deepcopy(doc_invoice)
 
     config_invoice = config.documents["RECHNUNG"]
     config_order = config.documents["AUFTRAG"]
@@ -140,14 +99,14 @@ def generate_invoice_and_order_docx(
     # Set up meta data for invoice and order
     today = date.today()
 
-    meta_invoice = DocMeta(
+    meta_invoice = DocxMeta(
         project_number=project_number,
         receipt_number=receipt_number,
         doctype=config_invoice.doctype,
         header=config_invoice.header,
         date_today=today,
     )
-    meta_order = DocMeta(
+    meta_order = DocxMeta(
         project_number=project_number,
         receipt_number=receipt_number,
         doctype=config_order.doctype,
@@ -158,7 +117,7 @@ def generate_invoice_and_order_docx(
     # Fill invoice placeholders + save
     replace_placeholders(
         doc_invoice,
-        build_meta_mapping(meta_invoice, config),
+        meta_invoice.to_mapping(config.date_format),
     )
     save_docx(doc_invoice, target_paths["invoice"])
     display_path = target_paths["invoice"].name
@@ -168,7 +127,7 @@ def generate_invoice_and_order_docx(
     # Fill order placeholders + save
     replace_placeholders(
         doc_order,
-        build_meta_mapping(meta_order, config),
+        meta_order.to_mapping(config.date_format),
     )
     save_docx(doc_order, target_paths["order"])
     display_path = target_paths["order"].name

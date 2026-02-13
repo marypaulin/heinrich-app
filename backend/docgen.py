@@ -16,7 +16,7 @@ from docx.text.paragraph import Paragraph
 
 from .formatting import format_price, format_quantity
 from .models import LineItem
-from .paths import VORDRUCK_PATH, get_display_path
+from .paths import VORDRUCK_PATH, get_display_path, get_intermediate_template_path
 
 
 def load_template() -> DocxDocument:
@@ -29,7 +29,18 @@ def load_template() -> DocxDocument:
         raise ValueError(f"Template not found: {VORDRUCK_PATH}")
 
 
-def load_intermediate_template(path: Path) -> DocxDocument:
+def save_docx(doc: DocxDocument, path: Path) -> None:
+    doc.save(str(path))
+
+
+def save_intermediate_template(project_number: str, doc: DocxDocument) -> None:
+    path = get_intermediate_template_path(project_number)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    save_docx(doc, path)
+
+
+def load_intermediate_template(project_number: str) -> DocxDocument:
+    path = get_intermediate_template_path(project_number)
     try:
         doc = Document(str(path))
         # TODO(optional): Log UI message
@@ -239,7 +250,3 @@ def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) ->
             break
         else:
             continue
-
-
-def save_docx(doc: DocxDocument, path: Path) -> None:
-    doc.save(str(path))
