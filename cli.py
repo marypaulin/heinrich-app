@@ -32,7 +32,13 @@ def main():
         if args.mode == "offer":
             _ = generate_offer(args.project_number, line_items, project_dir, config)
         else:
-            _ = generate_delivery(args.project_number, line_items, project_dir, config)
+            _ = generate_delivery(
+                args.project_number,
+                args.receipt_number,
+                line_items,
+                project_dir,
+                config,
+            )
     elif args.mode == "invoice":
         _ = generate_invoice_and_order(
             args.project_number, args.receipt_number, project_dir, config

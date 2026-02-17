@@ -86,10 +86,14 @@ def run_delivery(config):
         st.session_state.delivery_info.append("Bitte eine Projektnummer eingeben.")
         return
 
+    receipt_number_delivery = (
+        st.session_state.get("receipt_number_delivery", "").strip() or None
+    )
+
     try:
         # Find project dir, read csv, and generate delivery note
         # Log messages from backend for each step
-        args = create_delivery_args(project_number_delivery)
+        args = create_delivery_args(project_number_delivery, receipt_number_delivery)
         project_dir, messages = get_project_dir(config.data_root, args.project_number)
         st.session_state.delivery_info.extend(messages)
         csv_path, messages = get_latest_csv_path(project_dir, config)
@@ -99,6 +103,7 @@ def run_delivery(config):
         st.session_state.delivery_info.extend(messages)
         messages = generate_delivery(
             args.project_number,
+            args.receipt_number,
             line_items,
             project_dir,
             config,
@@ -117,10 +122,10 @@ def run_invoice(config):
     st.session_state.invoice_error = []
 
     project_number_invoice = st.session_state.get("project_number_invoice", "").strip()
-    receipt_number = st.session_state.get("receipt_number", "").strip()
+    receipt_number_invoice = st.session_state.get("receipt_number_invoice", "").strip()
 
     # Catch error if button is clicked without numbers
-    if not project_number_invoice or not receipt_number:
+    if not project_number_invoice or not receipt_number_invoice:
         st.session_state.delivery_info.append(
             "Bitte Projekt- und Belegnummer eingeben."
         )
@@ -129,7 +134,7 @@ def run_invoice(config):
     try:
         # Find project dir and generate invoice and order confirmation
         # Log messages from backend for each step
-        args = create_invoice_args(project_number_invoice, receipt_number)
+        args = create_invoice_args(project_number_invoice, receipt_number_invoice)
         project_dir, messages = get_project_dir(
             config.data_root,
             args.project_number,
@@ -160,7 +165,7 @@ def app():
         st.image("assets/logo.png")
 
     # Title
-    st.title("RHI Projekte")
+    st.title("RHI Abrechnung")
 
     # Introduction
     st.markdown(
@@ -202,13 +207,20 @@ def app():
     st.subheader("Lieferschein")
 
     with st.form("delivery_form"):
-        col1, _ = st.columns(2)
+        col1, col2 = st.columns(2)
 
         with col1:
             st.text_input(
                 "Bitte Projektnummer eingeben",
                 key="project_number_delivery",
                 placeholder="zB 1235",
+            )
+
+        with col2:
+            st.text_input(
+                "Optional Belegnummer eingeben",
+                key="receipt_number_delivery",
+                placeholder="zB 4504049161",
             )
 
         st.form_submit_button(
@@ -243,7 +255,7 @@ def app():
         with col2:
             st.text_input(
                 "Bitte Belegnummer eingeben",
-                key="receipt_number",
+                key="receipt_number_invoice",
                 placeholder="zB 4504049161",
             )
 

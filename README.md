@@ -76,6 +76,15 @@ Nach dem Klonen befindet sich das Projekt im neu erstellten Ordner `heinrich-app
 Hinweis:
 Für das reine Klonen eines öffentlichen Repositories ist kein GitHub-Account und kein SSH-Key erforderlich.
 
+5. Fetching Updates:
+
+
+```
+git pull
+```
+
+
+
 ---
 
 ## 4. Konfiguration
@@ -142,6 +151,10 @@ or short
 ```
 python cli.py -m delivery -p 1235
 ```
+or with optional receipt number
+```
+python cli.py -m delivery -p 1235 -r 4504049161
+```
 
 
 ---
@@ -174,6 +187,7 @@ Zentral ist ein **zweistufiger Prozess**:
 **Eingaben**
 
 * `project_number`
+* Optional: `receipt_number` (für delivery mode)
 * Zeiterfassungs-CSV im Projektordner (automatisch erkannt anhand `project_number`)
 
 **Ablauf**
@@ -225,7 +239,7 @@ Zentral ist ein **zweistufiger Prozess**:
 ## 7. Geplante Erweiterungen (Ausblick)
 
 * UI-basierte Erfassung von Positionen zur Erzeugung von maßgeschneiderten Angeboten
-* Generierung von E-Rechnungen (z. B. XRechnung / ZUGFeRD)
+* Generierung von E-Rechnungen (z.B. XRechnung / ZUGFeRD)
 * Anpassung der Konfigurationsdatei über das UI
 
 ---
@@ -243,22 +257,27 @@ Project numbers:
 ```
 python cli.py -m offer -p 1218
 python cli.py -m delivery -p 1218
+python cli.py -m delivery -p 1218 -r 4504020708
 python cli.py -m invoice -p 1218 -r 4504020708
 
 python cli.py -m offer -p 1223
 python cli.py -m delivery -p 1223
+python cli.py -m delivery -p 1223 -r 4504030989
 python cli.py -m invoice -p 1223 -r 4504030989
 
 python cli.py -m offer -p 1235
 python cli.py -m delivery -p 1235
+python cli.py -m delivery -p 1235 -r 4504049161
 python cli.py -m invoice -p 1235 -r 4504049161
 
 python cli.py -m offer -p 1236
 python cli.py -m delivery -p 1236
+python cli.py -m delivery -p 1236 -r 4504059903
 python cli.py -m invoice -p 1236 -r 4504059903
 
 python cli.py -m offer -p 1253
 python cli.py -m delivery -p 1253
+python cli.py -m delivery -p 1253 -r 4504072524
 python cli.py -m invoice -p 1253 -r 4504072524
 
 ```

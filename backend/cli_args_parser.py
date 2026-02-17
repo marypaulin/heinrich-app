@@ -21,6 +21,7 @@ def parse_cli_args(argv: Iterable[str] | None = None) -> InputArgs:
         "-m",
         "--mode",
         type=str.lower,
+        required=True,
         choices=["offer", "delivery", "invoice"],
         help="Mode: offer, delivery or invoice",
     )
@@ -33,20 +34,22 @@ def parse_cli_args(argv: Iterable[str] | None = None) -> InputArgs:
         type=str,
         required=False,
         default=None,
-        help="Receipt number (required for invoice)",
+        help="Receipt number (optional for delivery, required for invoice)",
     )
 
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    if args.mode in ("offer", "delivery") and args.receipt_number is not None:
-        parser.error("RECEIPT_NUMBER should not be provided for offer or delivery mode")
+    if args.mode == "offer" and args.receipt_number is not None:
+        parser.error("RECEIPT_NUMBER should not be provided for offer mode")
 
     try:
         if args.mode == "offer":
             return create_offer_args(args.project_number)
         elif args.mode == "delivery":
-            return create_delivery_args(args.project_number)
+            return create_delivery_args(args.project_number, args.receipt_number)
         else:
+            if args.receipt_number is None:
+                parser.error("RECEIPT_NUMBER is required for invoice mode")
             return create_invoice_args(args.project_number, args.receipt_number)
     except ValueError as e:
         parser.error(str(e))

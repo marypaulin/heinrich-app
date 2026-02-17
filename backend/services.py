@@ -2,6 +2,7 @@ import logging
 from copy import deepcopy
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Optional
 
 from .calculations import calculate_sums_and_vat
 from .config import Config
@@ -28,6 +29,7 @@ from .pdfgen import render_pdf
 def generate_offer_or_delivery_docx(
     doc_key: str,
     project_number: str,
+    receipt_number: Optional[str],
     line_items: list[LineItem],
     target_path: Path,
     config: Config,
@@ -44,7 +46,7 @@ def generate_offer_or_delivery_docx(
 
     meta_data = DocxMeta(
         project_number=project_number,
-        receipt_number=None,
+        receipt_number=receipt_number,
         doctype=doc_config.doctype,
         header=doc_config.header,
         date_today=today,
@@ -52,6 +54,7 @@ def generate_offer_or_delivery_docx(
 
     # Set up intermediate data
     totals = calculate_sums_and_vat(line_items, config)
+    # Assert not None for type checking reasons
     assert doc_config.delivery_days is not None
     delivery_days = doc_config.delivery_days
     delivery_date = DocxDeliveryDate(today + timedelta(days=delivery_days))
@@ -147,6 +150,7 @@ def generate_offer(
     generate_offer_or_delivery_docx(
         doc_key="ANGEBOT",
         project_number=project_number,
+        receipt_number=None,
         line_items=line_items,
         target_path=target_path,
         config=config,
@@ -159,6 +163,7 @@ def generate_offer(
 
 def generate_delivery(
     project_number: str,
+    receipt_number: Optional[str],
     line_items: list[LineItem],
     project_dir: Path,
     config: Config,
@@ -169,6 +174,7 @@ def generate_delivery(
     generate_offer_or_delivery_docx(
         doc_key="LIEFERSCHEIN",
         project_number=project_number,
+        receipt_number=receipt_number,
         line_items=line_items,
         target_path=target_path,
         config=config,
