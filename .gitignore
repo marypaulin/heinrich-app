@@ -1,6 +1,7 @@
 config.json
 RHI/
-templates/
+templates/Vordruck.docx
+templates/intermediate/
 output/
 **/__pycache__/
 *.egg-info/
