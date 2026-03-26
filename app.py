@@ -1,19 +1,19 @@
 import streamlit as st
 
-from backend.csv_loader import load_csv_data
-from backend.csv_transformer import csv_rows_to_line_items
-from backend.input_args import (
+from src.backend.csv_loader import load_csv_data
+from src.backend.csv_transformer import csv_rows_to_line_items
+from src.backend.input_args import (
     create_delivery_args,
     create_invoice_args,
     create_offer_args,
 )
-from backend.paths import get_latest_csv_path, get_project_dir
-from backend.services import (
+from src.backend.paths import get_latest_csv_path, get_project_dir
+from src.backend.services import (
     generate_delivery,
     generate_invoice_and_order,
     generate_offer,
 )
-from state import get_config, initialize_session_state
+from src.ui.state import get_config, initialize_session_state
 
 st.set_page_config(
     page_title="Heinrich App",

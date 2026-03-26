@@ -5,12 +5,12 @@ heinrich-app CLI utility
 import logging
 import sys
 
-from backend.cli_args_parser import parse_cli_args
-from backend.config import load_config
-from backend.csv_loader import load_csv_data
-from backend.csv_transformer import csv_rows_to_line_items
-from backend.paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
-from backend.services import (
+from src.backend.cli_args_parser import parse_cli_args
+from src.backend.config import load_config
+from src.backend.csv_loader import load_csv_data
+from src.backend.csv_transformer import csv_rows_to_line_items
+from src.backend.paths import CONFIG_PATH, get_latest_csv_path, get_project_dir
+from src.backend.services import (
     generate_delivery,
     generate_invoice_and_order,
     generate_offer,
