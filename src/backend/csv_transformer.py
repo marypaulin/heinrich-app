@@ -1,9 +1,8 @@
 import logging
 from typing import Iterable
 
-from backend.messages import Messages
-
 from .config import Config
+from .messages import Messages
 from .models import CsvRow, LineItem
 
 
@@ -90,6 +89,7 @@ def csv_rows_to_line_items(
         )
         description = f"{hourly_description} zu Auftrag Nr. {order_number}"
         unit_price = csv_row.hourly_rate
+        # TODO: Add comparison check with csv total + logging
         total_price = csv_row.hourly_rate * csv_row.duration_hours
 
         line_item = LineItem(
