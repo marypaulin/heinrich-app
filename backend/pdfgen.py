@@ -14,6 +14,7 @@ from .messages import Messages
 _WORD_CONVERT_LOCK = threading.Lock()
 
 
+# TODO: Split into multiple functions
 def render_pdf(docx_path: Path, messages: Messages) -> None:
     """Convert DOCX file to PDF using Word on Windows or LibreOffice on Linux."""
 

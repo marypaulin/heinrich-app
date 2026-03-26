@@ -2,6 +2,7 @@ from .config import Config
 from .models import LineItem, Totals
 
 
+# TODO: Move to Totals class
 def calculate_sums_and_vat(items: list[LineItem], config: Config) -> Totals:
     """Calculate sum_net, vat, and sum_gross from LineItems."""
     sum_net = sum(i.total_price for i in items)

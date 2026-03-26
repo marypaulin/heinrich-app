@@ -41,6 +41,7 @@ class LineItem:
 
 @dataclass(frozen=True)
 class Totals:
+    # TODO: Add vat_rate + class method for calculation
     sum_net: float
     vat: float
     sum_gross: float

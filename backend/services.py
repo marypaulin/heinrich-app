@@ -26,6 +26,8 @@ from .paths import (
 from .pdfgen import render_pdf
 
 
+# TODO: Split into multiple functions
+# e.g. _build_from_template(), _build_docx(), _save_and_log
 def generate_offer_or_delivery_docx(
     doc_key: str,
     project_number: str,
@@ -84,6 +86,7 @@ def generate_offer_or_delivery_docx(
     messages.info(f"{log_labels[1]} erzeugt: {display_path}")
 
 
+# TODO: Split into multiple functions
 def generate_invoice_and_order_docx(
     project_number: str,
     receipt_number: str,
@@ -185,6 +188,7 @@ def generate_delivery(
     return messages.items
 
 
+# TODO: Split into multiple functions
 def generate_invoice_and_order(
     project_number: str,
     receipt_number: str,
