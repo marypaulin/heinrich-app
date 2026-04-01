@@ -39,7 +39,7 @@ def run_offer(config):
     try:
         st.session_state.offer_info = generate_offer(project_number, config)
         st.toast("Angebot erzeugt", icon="✅")
-    except Exception as e:
+    except (FileNotFoundError, ValueError) as e:
         st.session_state.offer_error = f"Error: {str(e)}"
         st.toast("Fehler beim Erzeugen", icon="❌")
 
@@ -60,7 +60,7 @@ def run_delivery(config):
             project_number, receipt_number, config
         )
         st.toast("Lieferschein erzeugt", icon="✅")
-    except Exception as e:
+    except (FileNotFoundError, ValueError) as e:
         st.session_state.delivery_error = f"Error: {str(e)}"
         st.toast("Fehler beim Erzeugen", icon="❌")
 
@@ -83,7 +83,7 @@ def run_invoice(config):
             project_number, receipt_number, config
         )
         st.toast("Rechnung und Auftragsbestätigung erzeugt", icon="✅")
-    except Exception as e:
+    except (FileNotFoundError, ValueError) as e:
         st.session_state.invoice_error = f"Error: {str(e)}"
         st.toast("Fehler beim Erzeugen", icon="❌")
 

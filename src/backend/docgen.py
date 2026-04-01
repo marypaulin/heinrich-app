@@ -133,7 +133,9 @@ def _replace_placeholder_across_runs(
         pos = next_pos
 
     if start_run is None or end_run is None:
-        return False  # should not happen, but safe guard
+        # should not happen, but safe guard
+        logging.warning("Placeholder span detection failed for: %s", placeholder)
+        return False
 
     # Rewrite texts
     prefix = runs[start_run].text[:start_off]
@@ -189,39 +191,33 @@ def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) ->
     """Fill the main table in the document with data.
 
     Note: This function is business-logic-specific."""
-    if not doc.tables:
-        logging.warning("No tables found in the document to fill.")
-        return
     for table in doc.tables:
         if len(table.columns) == 5 and table.cell(0, 0).text == "Pos":
-            target_table = table
-
             # Fill the first table row (already present in template)
-            if line_items:
-                # 1) Get the first table row
-                row = target_table.rows[1]
+            # 1) Get the first table row
+            row = table.rows[1]
 
-                # 2) Fill cells
-                cells = row.cells
-                cells[0].text = str(1)
-                cells[1].text = format_quantity(line_items[0].quantity)
-                cells[2].text = line_items[0].description
-                cells[3].text = format_price(line_items[0].unit_price)
-                cells[4].text = format_price(line_items[0].total_price)
+            # 2) Fill cells
+            cells = row.cells
+            cells[0].text = str(1)
+            cells[1].text = format_quantity(line_items[0].quantity)
+            cells[2].text = line_items[0].description
+            cells[3].text = format_price(line_items[0].unit_price)
+            cells[4].text = format_price(line_items[0].total_price)
 
-                # 3) Format all cells in this row
-                for cell in cells:
-                    _format_cell(cell)
+            # 3) Format all cells in this row
+            for cell in cells:
+                _format_cell(cell)
 
-                # 4) Align last two columns to the right
-                cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
-                cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            # 4) Align last two columns to the right
+            cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
             # For additional line items, insert new rows
             for pos, item in enumerate(line_items[1:], start=2):
                 # 1) Create a new row
-                tr = deepcopy(target_table.rows[1]._tr)
-                tbl = target_table._tbl
+                tr = deepcopy(table.rows[1]._tr)
+                tbl = table._tbl
 
                 # 2) Compute insertion index
                 insert_at = pos + 2
@@ -230,7 +226,7 @@ def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) ->
                 tbl.insert(insert_at, tr)
 
                 # 4) Rewrap so the proxy matches the new position
-                row = _Row(tr, target_table)
+                row = _Row(tr, table)
 
                 # 5) Fill cells
                 cells = row.cells
@@ -247,6 +243,7 @@ def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) ->
                 # 7) Align last two columns to the right
                 cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            break
-        else:
-            continue
+            return
+
+    raise ValueError("No matching table found in template document.")
+    raise ValueError("No matching table found in template document.")

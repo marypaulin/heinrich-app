@@ -52,7 +52,7 @@ def _build_meta(
 
 def _build_delivery_date(doc_key: str, config: Config) -> DocxDeliveryDate:
     doc_config = config.documents[doc_key]
-    assert doc_config.delivery_days is not None
+    assert doc_config.delivery_days is not None  # always set for ANGEBOT/LIEFERSCHEIN
     return DocxDeliveryDate(date.today() + timedelta(days=doc_config.delivery_days))
 
 
@@ -66,6 +66,8 @@ def _load_line_items(
     csv_rows = load_csv_data(csv_path, config)
     line_items, transform_msgs = csv_rows_to_line_items(csv_rows, config)
     messages.items.extend(transform_msgs)
+    if not line_items:
+        raise ValueError("Keine gültigen Zeilen in der CSV-Datei gefunden.")
     return line_items
 
 
