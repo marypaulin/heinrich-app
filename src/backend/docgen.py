@@ -187,6 +187,20 @@ def _format_cell(cell, font_name="Calibri", font_size=9, bold=True):
             run.font.bold = bold
 
 
+def _fill_row_cells(row: _Row, pos: int, item: LineItem) -> None:
+    """Fill and format the cells of a single table row."""
+    cells = row.cells
+    cells[0].text = str(pos)
+    cells[1].text = format_quantity(item.quantity)
+    cells[2].text = item.description
+    cells[3].text = format_price(item.unit_price)
+    cells[4].text = format_price(item.total_price)
+    for cell in cells:
+        _format_cell(cell)
+    cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+
 def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) -> None:
     """Fill the main table in the document with data.
 
@@ -198,20 +212,7 @@ def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) ->
             row = table.rows[1]
 
             # 2) Fill cells
-            cells = row.cells
-            cells[0].text = str(1)
-            cells[1].text = format_quantity(line_items[0].quantity)
-            cells[2].text = line_items[0].description
-            cells[3].text = format_price(line_items[0].unit_price)
-            cells[4].text = format_price(line_items[0].total_price)
-
-            # 3) Format all cells in this row
-            for cell in cells:
-                _format_cell(cell)
-
-            # 4) Align last two columns to the right
-            cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            _fill_row_cells(row, pos=1, item=line_items[0])
 
             # For additional line items, insert new rows
             for pos, item in enumerate(line_items[1:], start=2):
@@ -229,20 +230,7 @@ def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) ->
                 row = _Row(tr, table)
 
                 # 5) Fill cells
-                cells = row.cells
-                cells[0].text = str(pos)
-                cells[1].text = format_quantity(item.quantity)
-                cells[2].text = item.description
-                cells[3].text = format_price(item.unit_price)
-                cells[4].text = format_price(item.total_price)
-
-                # 6) Format all cells in this row
-                for cell in cells:
-                    _format_cell(cell)
-
-                # 7) Align last two columns to the right
-                cells[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
-                cells[4].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                _fill_row_cells(row, pos=pos, item=item)
             return
 
     raise ValueError("No matching table found in template document.")
