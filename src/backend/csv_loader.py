@@ -82,21 +82,22 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
 
     result = []
 
-    for i, row in enumerate(rows, start=2):
+    # Row numbering starts at 1; row 0 is the header (consumed by DictReader)
+    for row_number, row in enumerate(rows, start=1):
         # Check required fields
         missing = [field for field in REQUIRED_FIELDS if not row.get(field)]
         if missing:
-            raise ValueError(f"Missing value(s) in row {i-1}: {', '.join(missing)}")
+            raise ValueError(f"Missing value(s) in row {row_number}: {', '.join(missing)}")
 
         csv_row = CsvRow(
-            row_number=i - 1,
-            date=_parse_date(i - 1, row[CSV_COL_DATE], config),
+            row_number=row_number,
+            date=_parse_date(row_number, row[CSV_COL_DATE], config),
             order_number=row[CSV_COL_ORDER_NUMBER],
             description=row[CSV_COL_DESC],
-            duration_hours=_parse_float(i - 1, row[CSV_COL_DURATION]),
-            hourly_rate=_parse_float(i - 1, row[CSV_COL_HOURLY_RATE]),
-            material_cost=_parse_float(i - 1, row[CSV_COL_MATERIAL]),
-            total_cost=_parse_float(i - 1, row[CSV_COL_TOTAL]),
+            duration_hours=_parse_float(row_number, row[CSV_COL_DURATION]),
+            hourly_rate=_parse_float(row_number, row[CSV_COL_HOURLY_RATE]),
+            material_cost=_parse_float(row_number, row[CSV_COL_MATERIAL]),
+            total_cost=_parse_float(row_number, row[CSV_COL_TOTAL]),
         )
         result.append(csv_row)
     return result
