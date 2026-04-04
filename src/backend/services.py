@@ -197,7 +197,11 @@ def generate_invoice_and_order(
     receipt_number: str,
     config: Config,
 ) -> list[str]:
-    """Full pipeline: validate → find project → generate Rechnung + Auftragsbestätigung DOCX + PDF."""
+    """Full pipeline: validate → find project → generate Rechnung + Auftragsbestätigung DOCX + PDF.
+
+    Precondition: an Angebot or Lieferschein must have been generated for this
+    project first, as this step reads the intermediate template produced by
+    those pipelines."""
     messages = Messages()
     args = create_invoice_args(project_number, receipt_number)
     project_dir, dir_msgs = get_project_dir(config.data_root, args.project_number)

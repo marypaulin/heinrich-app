@@ -49,7 +49,7 @@ def load_intermediate_template(project_number: str) -> DocxDocument:
         return doc
     except PackageNotFoundError:
         raise ValueError(
-            "Intermediate template not found - generate Lieferschein first."
+            "Intermediate template not found - generate Angebot or Lieferschein first."
         )
 
 
