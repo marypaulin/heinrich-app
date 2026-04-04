@@ -43,7 +43,6 @@ def load_intermediate_template(project_number: str) -> DocxDocument:
     path = get_intermediate_template_path(project_number)
     try:
         doc = Document(str(path))
-        # TODO(optional): Log UI message
         display_path = get_display_path(path)
         logging.info(f"Using intermediate template: {display_path}")
         return doc
@@ -233,5 +232,6 @@ def fill_table_with_line_items(doc: DocxDocument, line_items: list[LineItem]) ->
                 _fill_row_cells(row, pos=pos, item=item)
             return
 
+    raise ValueError("No matching table found in template document.")
     raise ValueError("No matching table found in template document.")
     raise ValueError("No matching table found in template document.")

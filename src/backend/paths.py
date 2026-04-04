@@ -132,6 +132,5 @@ def get_order_target_path(
 
 def get_display_path(path: Path) -> str:
     """Get relative grandparent path for logging purposes"""
-    # TODO(optional): Dynamic parent level
     display_path = f"{path.parent.parent.name}/{path.parent.name}/{path.name}"
     return display_path

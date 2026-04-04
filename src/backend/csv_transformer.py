@@ -89,7 +89,7 @@ def csv_rows_to_line_items(
         )
         description = f"{hourly_description} zu Auftrag Nr. {order_number}"
         unit_price = csv_row.hourly_rate
-        # TODO: Add comparison check with csv total + logging
+        # TODO: Add comparison check with csv total
         total_price = csv_row.hourly_rate * csv_row.duration_hours
 
         line_item = LineItem(
@@ -107,8 +107,7 @@ def csv_rows_to_line_items(
 
             kind = "material"
             quantity = 1
-            # NOTE: The original CSV description is currently not used.
-            # TODO: Add CSV description
+            # NOTE: Original CSV description currently not used upon customer request
             description = f"Material zu Auftrag Nr. {order_number}"
             unit_price = csv_row.material_cost
             total_price = unit_price
