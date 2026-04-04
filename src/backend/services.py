@@ -4,7 +4,6 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Optional
 
-from .calculations import calculate_sums_and_vat
 from .config import Config
 from .csv_loader import load_csv_data
 from .csv_transformer import csv_rows_to_line_items
@@ -19,7 +18,7 @@ from .docgen import (
 )
 from .input_args import create_delivery_args, create_invoice_args, create_offer_args
 from .messages import Messages
-from .models import DocxDeliveryDate, DocxMeta, LineItem
+from .models import DocxDeliveryDate, DocxMeta, LineItem, Totals
 from .paths import (
     get_delivery_target_path,
     get_invoice_target_path,
@@ -105,7 +104,7 @@ def _generate_offer_or_delivery_docx(
     """Fill Word template with CSV data and save as Angebot or Lieferschein DOCX."""
     doc = load_template()
     meta = _build_meta(project_number, receipt_number, doc_key, config)
-    totals = calculate_sums_and_vat(line_items, config)
+    totals = Totals.calculate_sums_and_vat(line_items, config.vat_rate)
     delivery_date = _build_delivery_date(doc_key, config)
 
     fill_table_with_line_items(doc, line_items)

@@ -41,10 +41,19 @@ class LineItem:
 
 @dataclass(frozen=True)
 class Totals:
-    # TODO: Add vat_rate + class method for calculation
     sum_net: float
     vat: float
     sum_gross: float
+
+    @staticmethod
+    def calculate_sums_and_vat(
+        line_items: list["LineItem"], vat_rate: float
+    ) -> "Totals":
+        """Calculate sum_net, vat, and sum_gross from LineItems."""
+        sum_net = sum(line_item.total_price for line_item in line_items)
+        vat = sum_net * vat_rate
+        sum_gross = sum_net + vat
+        return Totals(sum_net=sum_net, vat=vat, sum_gross=sum_gross)
 
     def to_mapping(self) -> dict[str, str]:
         return {
