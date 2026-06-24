@@ -1,3 +1,5 @@
+"""Streamlit web app entry point."""
+
 import streamlit as st
 
 from src.backend.services import (
@@ -104,8 +106,7 @@ def app():
     # Introduction
     st.markdown(
         "Erstelle **Angebote**, **Lieferscheine**, **Rechnungen** und **Auftragsbestätigungen** "
-        "für RHI direkt aus deinen Zeiterfassungsdaten.\n"
-        "Die Konfiguration erfolgt über die Datei `heinrich-app/config.json`. "
+        "mit nur wenigen Klicks direkt aus deinen Zeiterfassungsdaten."
     )
 
     # Angebot

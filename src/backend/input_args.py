@@ -1,3 +1,5 @@
+"""Input validation and argument object creation for CLI and UI entry points."""
+
 import re
 from dataclasses import dataclass
 from typing import Literal, Optional, Union

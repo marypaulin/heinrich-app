@@ -1,3 +1,5 @@
+"""Domain models for CSV data and document generation."""
+
 from dataclasses import dataclass
 from datetime import date
 from typing import Literal, Optional

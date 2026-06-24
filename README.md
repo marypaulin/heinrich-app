@@ -1,6 +1,16 @@
 # Automatisierung des Rechnungsprozesses für Heinrich Metallbau
 
-Dieses Programm unterstützt die Erstellung von **Angeboten**, **Lieferscheinen**, **Auftragsbestätigungen** und **Rechnungen** aus den Zeiterfassungsdaten von Heinrich Metallbau.
+Dieses Tool wurde für Heinrich Metallbau entwickelt, um die manuelle Erstellung von Angeboten, Lieferscheinen, Auftragsbestätigungen und Rechnungen zu automatisieren. Es ist als lokale Streamlit-Webapp sowie als CLI-Tool nutzbar. Grundlage sind CSV-Exporte aus der bestehenden Zeiterfassungssoftware des Kunden, die automatisch verarbeitet und in ein vorhandenes Word-Template übertragen werden. Das Tool ist auf den Abrechnungsprozess mit dem Großkunden RHI ausgerichtet.
+
+**Hinweis:** Das Tool befindet sich bis Ende 2026 im produktiven Einsatz. Ab 2027 wechselt der Kunde auf eine kommerzielle Lösung, die u. a. die Erstellung von E-Rechnungen (XRechnung/ZUGFeRD) unterstützt. Eine Weiterentwicklung dieses Projekts ist daher nicht geplant.
+
+---
+
+Die Benutzeroberfläche ist bewusst einfach gehalten: Projektnummer eingeben, Dokument erzeugen.
+
+![Hauptansicht der Webapp](assets/webapp_screenshot.png)
+
+
 
 ---
 
@@ -32,6 +42,8 @@ Wenn eine Versionsnummer angezeigt wird, ist Python korrekt installiert.
 
 ## 2. Git Installation (Windows)
 
+Git wird benötigt, um das Tool herunterzuladen und Updates zu beziehen.
+
 1. Öffne die offizielle Git-Website:
    [https://git-scm.com](https://git-scm.com)
 
@@ -51,10 +63,10 @@ Wenn eine Versionsnummer angezeigt wird, ist Git korrekt installiert und einsatz
 
 ## 3. Download der App via Git
 
-1. In diesem Github-Repository, klicke oben rechts auf den grünen Button **Code** und kopiere die **HTTPS-URL** des Repositories.
+1. Klicke oben rechts auf den grünen Button **Code** und kopiere die **HTTPS-URL** des Repos.
 
 2. Öffne ein Terminal
-   (z. B. PowerShell unter Windows oder ein normales Terminal unter Linux/macOS).
+   (z. B. PowerShell unter Windows).
 
 3. Navigiere in den Ordner, in dem das Tool gespeichert werden soll:
 
@@ -63,7 +75,7 @@ Wenn eine Versionsnummer angezeigt wird, ist Git korrekt installiert und einsatz
 cd path/to/folder/
 ```
 
-4. Repository klonen:
+4. Repo klonen:
 
 
 ```
@@ -71,19 +83,18 @@ git clone https://github.com/USER/heinrich-app.git
 ```
 
 
-Nach dem Klonen befindet sich das Projekt im neu erstellten Ordner `heinrich-app`.
+Das Projekt befindet sich nun im neu erstellten Ordner `heinrich-app`.
 
 Hinweis:
 Für das reine Klonen eines öffentlichen Repositories ist kein GitHub-Account und kein SSH-Key erforderlich.
 
-5. Fetching Updates:
+5. Updates abrufen
 
+Mit folgendem Befehl werden Änderungen aus dem GitHub-Repository in den lokalen Projektordner übernommen:
 
 ```
 git pull
 ```
-
-
 
 ---
 
@@ -97,8 +108,9 @@ Für die Nutzung des Tools werden zwei weitere Dateien benötigt, die sich nicht
 
 Diese erhält der Nutzer des Tools per Mail. Für die korrekte Nutzung:
 
-1. Erstelle im Projektordner einen neuen Ordner `templates` und lege das Word-Template `Vordruck.docx` hier ab.
-2. Platziere die `config.json` im Projektordner (auf Root-Ebene) und konfiguriere den Pfad zum Projektverzeichnis: `"DATA_ROOT": "/Pfad/zu/RHI/"`
+1. `Vordruck.docx` → Ordner `templates`
+2. `config.json` → Heinrich App Projektordner (Root-Ebene)
+3. In `config.json` den Pfad zum Datenverzeichnis konfigurieren: `"DATA_ROOT": "/Pfad/zu/RHI/"`
 
 ---
 
@@ -122,7 +134,7 @@ Das Tool kann unter Windows als lokale Web-App genutzt werden, die per Doppelkli
 
 ---
 
-## Nutzung als CLI-Tool
+## 6. Nutzung als CLI-Tool
 
 Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestartet.
 
@@ -147,11 +159,11 @@ python cli.py -m offer -p 1235
 ```
 python cli.py --mode delivery --project-number 1235
 ```
-or short
+oder kurz
 ```
 python cli.py -m delivery -p 1235
 ```
-or with optional receipt number
+oder mit optionaler Belegnummer
 ```
 python cli.py -m delivery -p 1235 -r 4504049161
 ```
@@ -164,14 +176,14 @@ python cli.py -m delivery -p 1235 -r 4504049161
 ```
 python cli.py --mode invoice --project-number 1235 --receipt-number 4504049161
 ```
-or short
+oder kurz
 ```
 python cli.py -m invoice -p 1235 -r 4504049161
 ```
 
 ---
 
-## 6. Dokumenten-Workflows
+## 7. Dokumenten-Workflows
 
 Das Tool arbeitet mit klar getrennten Modi. Jeder Modus entspricht einem eigenen Verarbeitungspfad und einem definierten Ergebnis.
 
@@ -236,17 +248,21 @@ Zentral ist ein **zweistufiger Prozess**:
 
 ---
 
-## 7. Geplante Erweiterungen (Ausblick)
+## 8. Erweiterungsideen
 
-* UI-basierte Erfassung von Positionen zur Erzeugung von maßgeschneiderten Angeboten
+Vor dem Wechsel auf eine kommerzielle Lösung waren folgende Erweiterungen angedacht:
+
+* UI-basierte Erfassung von Positionen zur Erzeugung von kundenspezifischen Angeboten
 * Generierung von E-Rechnungen (z.B. XRechnung / ZUGFeRD)
 * Anpassung der Konfigurationsdatei über das UI
 
 ---
 
-## 8. Test Cases
+## 9. Testing
 
-Project numbers:
+Da das Tool schrittweise entlang einer wachsenden Businesslogik entstanden ist und die Anforderungen zu Beginn nicht vollständig feststanden, wurde auf automatisierte Tests verzichtet. Getestet wurde manuell über das CLI: Dokumente erzeugen und das Ergebnis visuell prüfen.
+
+Folgende Projektnummern eignen sich als Testfälle:
 
 - 1218
 - 1223

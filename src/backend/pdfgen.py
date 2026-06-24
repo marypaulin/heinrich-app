@@ -1,3 +1,5 @@
+"""DOCX-to-PDF conversion via Word (Windows) or LibreOffice (Linux)."""
+
 import contextlib
 import logging
 import platform
@@ -14,7 +16,6 @@ from .messages import Messages
 _WORD_CONVERT_LOCK = threading.Lock()
 
 
-# TODO: Split into multiple functions
 def render_pdf(docx_path: Path, messages: Messages) -> None:
     """Convert DOCX file to PDF using Word on Windows or LibreOffice on Linux."""
 

@@ -1,3 +1,5 @@
+"""CSV row transformation into document-ready LineItem objects."""
+
 import logging
 from typing import Iterable
 
@@ -77,7 +79,6 @@ def csv_rows_to_line_items(
             )
             continue
 
-        # Arbeitsstunden
         logging.info(f"Creating hours item for order number.: {order_number}")
 
         kind = "hours"
@@ -89,7 +90,6 @@ def csv_rows_to_line_items(
         )
         description = f"{hourly_description} zu Auftrag Nr. {order_number}"
         unit_price = csv_row.hourly_rate
-        # TODO: Add comparison check with csv total
         total_price = csv_row.hourly_rate * csv_row.duration_hours
 
         line_item = LineItem(

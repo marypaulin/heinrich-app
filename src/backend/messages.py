@@ -1,3 +1,5 @@
+"""User-facing message accumulator for status and warning output."""
+
 from dataclasses import dataclass, field
 
 

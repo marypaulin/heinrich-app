@@ -1,3 +1,5 @@
+"""Config data model and loader for application settings."""
+
 import json
 from dataclasses import dataclass
 from pathlib import Path

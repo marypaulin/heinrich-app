@@ -1,3 +1,6 @@
+"""German locale formatters for prices and quantities."""
+
+
 def format_quantity(value: float) -> str:
     """Format a quantity value with one decimal,
     German locale (e.g. 1.5 -> 1,5; 2.0 -> 2)."""

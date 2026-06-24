@@ -1,6 +1,4 @@
-"""
-heinrich-app CLI utility
-"""
+"""CLI entry point for document generation — run with --help for usage."""
 
 import logging
 import sys

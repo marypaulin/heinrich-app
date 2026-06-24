@@ -1,3 +1,5 @@
+"""Streamlit session state initialisation and config caching."""
+
 import streamlit as st
 
 from src.backend.config import Config, load_config
@@ -9,7 +11,6 @@ def get_config() -> Config:
 
 
 def initialize_session_state() -> None:
-    # Session state for UI messages
     if "offer_info" not in st.session_state:
         st.session_state.offer_info = []
     if "offer_error" not in st.session_state:

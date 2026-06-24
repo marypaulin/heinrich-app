@@ -1,3 +1,5 @@
+"""Public API for document generation — orchestrates the full pipeline from CSV to PDF."""
+
 import logging
 from copy import deepcopy
 from datetime import date, timedelta
