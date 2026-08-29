@@ -1,7 +1,7 @@
 """CSV row transformation into document-ready LineItem objects."""
 
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 from .config import Config
 from .messages import Messages

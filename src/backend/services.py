@@ -4,7 +4,6 @@ import logging
 from copy import deepcopy
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Optional
 
 from .config import Config
 from .csv_loader import load_csv_data
@@ -31,13 +30,12 @@ from .paths import (
 )
 from .pdfgen import render_pdf
 
-
 # — Private data builders —————————————————————————————————————————————————————
 
 
 def _build_meta(
     project_number: str,
-    receipt_number: Optional[str],
+    receipt_number: str | None,
     doc_key: str,
     config: Config,
 ) -> DocxMeta:
@@ -95,7 +93,7 @@ def _fill_and_save_docx(
 def _generate_offer_or_delivery_docx(
     doc_key: str,
     project_number: str,
-    receipt_number: Optional[str],
+    receipt_number: str | None,
     line_items: list[LineItem],
     target_path: Path,
     config: Config,
@@ -114,7 +112,15 @@ def _generate_offer_or_delivery_docx(
     replace_delivery_date(doc, delivery_date.to_mapping(config.date_format))
     save_intermediate_template(project_number, doc)
 
-    _fill_and_save_docx(doc, meta, target_path, config, messages, log_label_en, log_label_de)
+    _fill_and_save_docx(
+        doc,
+        meta,
+        target_path,
+        config,
+        messages,
+        log_label_en,
+        log_label_de,
+    )
 
 
 def _generate_invoice_and_order_docx(
@@ -132,12 +138,22 @@ def _generate_invoice_and_order_docx(
     meta_order = _build_meta(project_number, receipt_number, "AUFTRAG", config)
 
     _fill_and_save_docx(
-        doc_invoice, meta_invoice, target_paths["invoice"], config, messages,
-        "invoice", "Rechnung",
+        doc_invoice,
+        meta_invoice,
+        target_paths["invoice"],
+        config,
+        messages,
+        "invoice",
+        "Rechnung",
     )
     _fill_and_save_docx(
-        doc_order, meta_order, target_paths["order"], config, messages,
-        "order confirmation", "Auftragsbestätigung",
+        doc_order,
+        meta_order,
+        target_paths["order"],
+        config,
+        messages,
+        "order confirmation",
+        "Auftragsbestätigung",
     )
 
 
@@ -169,7 +185,7 @@ def generate_offer(project_number: str, config: Config) -> list[str]:
 
 def generate_delivery(
     project_number: str,
-    receipt_number: Optional[str],
+    receipt_number: str | None,
     config: Config,
 ) -> list[str]:
     """Full pipeline: validate → find project → load CSV → generate Lieferschein DOCX + PDF."""

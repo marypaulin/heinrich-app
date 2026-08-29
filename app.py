@@ -42,7 +42,7 @@ def run_offer(config):
         st.session_state.offer_info = generate_offer(project_number, config)
         st.toast("Angebot erzeugt", icon="✅")
     except (FileNotFoundError, ValueError) as e:
-        st.session_state.offer_error = f"Error: {str(e)}"
+        st.session_state.offer_error = f"Error: {e!s}"
         st.toast("Fehler beim Erzeugen", icon="❌")
 
 
@@ -63,7 +63,7 @@ def run_delivery(config):
         )
         st.toast("Lieferschein erzeugt", icon="✅")
     except (FileNotFoundError, ValueError) as e:
-        st.session_state.delivery_error = f"Error: {str(e)}"
+        st.session_state.delivery_error = f"Error: {e!s}"
         st.toast("Fehler beim Erzeugen", icon="❌")
 
 
@@ -75,9 +75,7 @@ def run_invoice(config):
     receipt_number = st.session_state.get("receipt_number_invoice", "").strip()
 
     if not project_number or not receipt_number:
-        st.session_state.invoice_info.append(
-            "Bitte Projekt- und Belegnummer eingeben."
-        )
+        st.session_state.invoice_info.append("Bitte Projekt- und Belegnummer eingeben.")
         return
 
     try:
@@ -86,7 +84,7 @@ def run_invoice(config):
         )
         st.toast("Rechnung und Auftragsbestätigung erzeugt", icon="✅")
     except (FileNotFoundError, ValueError) as e:
-        st.session_state.invoice_error = f"Error: {str(e)}"
+        st.session_state.invoice_error = f"Error: {e!s}"
         st.toast("Fehler beim Erzeugen", icon="❌")
 
 

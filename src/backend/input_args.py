@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import Literal, Optional, Union
+from typing import Literal
 
 # Project number should be exactly four digits
 PROJECT_NUMBER_RE = re.compile(r"\d{4}")
@@ -18,7 +18,7 @@ class OfferArgs:
 class DeliveryArgs:
     mode: Literal["delivery"]
     project_number: str
-    receipt_number: Optional[str]
+    receipt_number: str | None
 
 
 @dataclass(frozen=True)
@@ -28,7 +28,7 @@ class InvoiceArgs:
     receipt_number: str
 
 
-InputArgs = Union[OfferArgs, DeliveryArgs, InvoiceArgs]
+InputArgs = OfferArgs | DeliveryArgs | InvoiceArgs
 
 
 def _format_project_number(project_number: str) -> str:
@@ -38,7 +38,7 @@ def _format_project_number(project_number: str) -> str:
     return project_number
 
 
-def _format_receipt_number_optional(receipt_number: Optional[str]) -> Optional[str]:
+def _format_receipt_number_optional(receipt_number: str | None) -> str | None:
     return (receipt_number or "").strip() or None
 
 
@@ -55,7 +55,7 @@ def create_offer_args(project_number: str) -> OfferArgs:
 
 
 def create_delivery_args(
-    project_number: str, receipt_number: Optional[str] = None
+    project_number: str, receipt_number: str | None = None
 ) -> DeliveryArgs:
     project_number = _format_project_number(project_number)
     receipt_number = _format_receipt_number_optional(receipt_number)

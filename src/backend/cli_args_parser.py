@@ -3,7 +3,7 @@ CLI Argument parsing and validation for heinrich-metallbau CLI.
 """
 
 import argparse
-from typing import Iterable
+from collections.abc import Iterable
 
 from .input_args import (
     InputArgs,

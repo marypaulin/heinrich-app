@@ -87,7 +87,9 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
         # Check required fields
         missing = [field for field in REQUIRED_FIELDS if not row.get(field)]
         if missing:
-            raise ValueError(f"Missing value(s) in row {row_number}: {', '.join(missing)}")
+            raise ValueError(
+                f"Missing value(s) in row {row_number}: {', '.join(missing)}"
+            )
 
         csv_row = CsvRow(
             row_number=row_number,

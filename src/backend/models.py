@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Literal, Optional
+from typing import Literal
 
 from .formatting import format_price
 from .placeholders import (
@@ -68,7 +68,7 @@ class Totals:
 @dataclass(frozen=True)
 class DocxMeta:
     project_number: str
-    receipt_number: Optional[str]
+    receipt_number: str | None
     doctype: str
     header: str
     date_today: date

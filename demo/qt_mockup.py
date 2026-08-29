@@ -7,7 +7,7 @@ from datetime import date
 from pathlib import Path
 
 from PySide6.QtCore import QAbstractTableModel, QDate, QModelIndex, QPointF, Qt
-from PySide6.QtGui import QColor, QFont, QImage, QPalette, QPainter, QPen, QPixmap
+from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPalette, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -64,6 +64,7 @@ PURPLE = "#a78bfa"
 SELECTION = "#1d3557"
 
 FONT_STACK = '"Segoe UI", "Inter", "Noto Sans", "DejaVu Sans", sans-serif'
+
 
 def _stylesheet(icons: dict[str, str]) -> str:
     return f"""
@@ -280,6 +281,7 @@ QCalendarWidget QToolButton {{ background: transparent; border: none; padding: 6
 QCalendarWidget QToolButton:hover {{ background: {BG_CARD}; border-radius: 6px; }}
 """
 
+
 DEMO_TIMESHEET = [
     [date(2025, 8, 1), "4504049161", "Geländer montiert", 8.0, 59.90, 0.00],
     [date(2025, 8, 2), "4504049161", "Materialkauf Stahl", 0.0, 59.90, 212.40],
@@ -322,8 +324,7 @@ TOTAL_COLUMN = len(TIMESHEET_COLUMNS) - 1
 
 def _german_number(value: float, decimals: int) -> str:
     return (
-        f"{value:,.{decimals}f}"
-        .replace(",", "\u00a0")
+        f"{value:,.{decimals}f}".replace(",", "\u00a0")
         .replace(".", ",")
         .replace("\u00a0", ".")
     )
@@ -347,7 +348,10 @@ class TimesheetModel(QAbstractTableModel):
         return 0 if parent.isValid() else len(TIMESHEET_COLUMNS)
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+        if (
+            orientation == Qt.Orientation.Horizontal
+            and role == Qt.ItemDataRole.DisplayRole
+        ):
             return TIMESHEET_COLUMNS[section].title
         return None
 
@@ -565,7 +569,9 @@ def _configure_table(view: QAbstractItemView, stretch_column: int):
     header.setSectionResizeMode(stretch_column, QHeaderView.ResizeMode.Stretch)
     header.setHighlightSections(False)
     header.setMinimumSectionSize(90)
-    header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+    header.setDefaultAlignment(
+        Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+    )
     view.verticalHeader().setDefaultSectionSize(40)
 
 
@@ -714,7 +720,9 @@ class TimesheetPage(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(16)
-        layout.addWidget(_section("Zeiterfassung bearbeiten" if editable else "Zeiterfassung"))
+        layout.addWidget(
+            _section("Zeiterfassung bearbeiten" if editable else "Zeiterfassung")
+        )
         layout.addWidget(path_row)
         layout.addWidget(table)
 
@@ -749,7 +757,15 @@ class HoursPage(QWidget):
     def __init__(self):
         super().__init__()
 
-        headers = ["Projekt", "Datum", "Auftrags-Nr.", "Art", "Stunden", "Satz", "Betrag"]
+        headers = [
+            "Projekt",
+            "Datum",
+            "Auftrags-Nr.",
+            "Art",
+            "Stunden",
+            "Satz",
+            "Betrag",
+        ]
         table = _table(headers, DEMO_HOURS, stretch_column=3)
 
         total = QLabel("Gesamt: 35,0 Stunden · 1.958,15 €")
@@ -882,7 +898,9 @@ class MainWindow(QMainWindow):
 
         self.nav = QListWidget()
         self.nav.setObjectName("Sidebar")
-        self.nav.addItems(["Zeiterfassung", "Dokumente", "Stundenarchiv", "Einstellungen"])
+        self.nav.addItems(
+            ["Zeiterfassung", "Dokumente", "Stundenarchiv", "Einstellungen"]
+        )
         self.nav.setFixedWidth(200)
         self.nav.setCurrentRow(0)
 
@@ -935,7 +953,9 @@ def main():
 
     if "--screenshot" in sys.argv:
         target = sys.argv[sys.argv.index("--screenshot") + 1]
-        page = int(sys.argv[sys.argv.index("--page") + 1]) if "--page" in sys.argv else 0
+        page = (
+            int(sys.argv[sys.argv.index("--page") + 1]) if "--page" in sys.argv else 0
+        )
         window.nav.setCurrentRow(page)
         window.show()
         app.processEvents()
