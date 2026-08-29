@@ -38,3 +38,7 @@ not in `services.py`.
 - Long files are divided by section separators: `# — Section name ————————————————`.
 - Use relative imports within `src/backend/`.
 - Constants: `UPPER_CASE`.
+
+## Git
+
+Commit messages are a single line — imperative mood, no body, no trailer.
