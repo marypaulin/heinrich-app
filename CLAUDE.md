@@ -1,12 +1,26 @@
 # Heinrich App — Claude Code Instructions
 
-## Architecture
+## Entry points & responsibilities
 
 `services.py` is the sole public entry point for document generation. Both `app.py`
 (Streamlit) and `cli.py` call only `services.py` — never internal pipeline modules.
 
 Input validation and formatting of user-supplied arguments belongs in `input_args.py`,
 not in `services.py`.
+
+## Data protection
+
+These paths are gitignored because they hold real customer data (Heinrich
+Metallbau / RHI — master data, invoices, timesheets). Never read their contents
+into context; use the listed substitute where one exists. This is also recorded
+in Claude's memory for this project.
+
+- `config.json`
+- `RHI/`
+- `templates/Vordruck.docx` — use `templates/Vordruck_sample.docx` instead
+
+`notes/` is gitignored too but holds no customer data — it's the user's own
+working notes and is always fine to read.
 
 ## Error handling
 
