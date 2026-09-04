@@ -57,4 +57,10 @@ working notes and is always fine to read.
 
 ## Git
 
-Commit messages are a single line — imperative mood, no body, no trailer.
+Commit conventions live in the global `commit-work` skill. Project specifics
+that override or fill in what the skill leaves open:
+
+- Scopes: `backend`, `ui`, `cli`, `docs`, `build`. Leave the scope out when none
+  of them fits.
+- Verification: `ruff check .`, for commits that touch `.py` files. There is no
+  test suite yet; documentation-only commits need no check.
