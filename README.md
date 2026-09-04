@@ -1,12 +1,10 @@
 # Automatisierung des Rechnungsprozesses für Heinrich Metallbau
 
-Dieses Tool wurde für Heinrich Metallbau entwickelt, um die manuelle Erstellung von Angeboten, Lieferscheinen, Auftragsbestätigungen und Rechnungen zu automatisieren. Es ist als lokale Streamlit-Webapp sowie als CLI-Tool nutzbar. Grundlage sind CSV-Exporte aus der bestehenden Zeiterfassungssoftware des Kunden, die automatisch verarbeitet und in ein vorhandenes Word-Template übertragen werden. Das Tool ist auf den Abrechnungsprozess mit dem Großkunden RHI ausgerichtet.
-
-**Hinweis:** Das Tool befindet sich bis Ende 2026 im produktiven Einsatz. Ab 2027 wechselt der Kunde auf eine kommerzielle Lösung, die u. a. die Erstellung von E-Rechnungen (XRechnung/ZUGFeRD) unterstützt. Eine Weiterentwicklung dieses Projekts ist daher nicht geplant.
+Dieses Tool wird für Heinrich Metallbau entwickelt, um die manuelle Erstellung von Angeboten, Lieferscheinen, Auftragsbestätigungen und Rechnungen zu automatisieren. Perspektivisch ist auch die Erstellung von E-Rechnungen geplant. Es ist aktuell als lokale Streamlit-Webapp sowie als CLI-Tool nutzbar. Grundlage sind CSV-Exporte aus der bestehenden Zeiterfassungssoftware des Kunden, die automatisch verarbeitet und in ein vorhandenes Word-Template übertragen werden. Das Tool ist auf den Abrechnungsprozess mit dem Großkunden RHI ausgerichtet.
 
 ---
 
-Die Benutzeroberfläche ist bewusst einfach gehalten: Projektnummer eingeben, Dokument erzeugen.
+Die Benutzeroberfläche ist bisher bewusst einfach gehalten: Projektnummer eingeben, Dokument erzeugen.
 
 ![Hauptansicht der Webapp](assets/webapp_screenshot.png)
 
@@ -16,7 +14,7 @@ Die Benutzeroberfläche ist bewusst einfach gehalten: Projektnummer eingeben, Do
 
 ## 1. Python Installation (Windows)
 
-Für die Nutzung des Tools wird Python 3.12.6 benötigt. Empfohlen wird die Installation über den offiziellen Python-Installer.
+Das Tool wird aktuell über GitHub bereitgestellt und setzt Python 3.12.6 voraus. Empfohlen wird die Installation über den offiziellen Python-Installer. (Hinweis: Geplant ist ein Skript, das Installation und Updates übernimmt — siehe Abschnitt 8.)
 
 1. Öffne die offizielle Python-Website:
    [https://www.python.org](https://www.python.org)
@@ -248,19 +246,20 @@ Zentral ist ein **zweistufiger Prozess**:
 
 ---
 
-## 8. Erweiterungsideen
+## 8. Geplante Erweiterungen
 
-Vor dem Wechsel auf eine kommerzielle Lösung waren folgende Erweiterungen angedacht:
+Folgende Erweiterungen sind geplant:
 
-* UI-basierte Erfassung von Positionen zur Erzeugung von kundenspezifischen Angeboten
-* Generierung von E-Rechnungen (z.B. XRechnung / ZUGFeRD)
-* Anpassung der Konfigurationsdatei über das UI
+* Einrichtung und Updates über ein Skript statt der manuellen Schritte aus den Abschnitten 1 bis 3
+* Zeiterfassung in der App ansehen und korrigieren, ohne Umweg über Excel
+* Übersicht aller erfassten Stunden über alle Projekte hinweg, als CSV exportierbar
+* Erzeugung von E-Rechnungen im Format ZUGFeRD
 
 ---
 
 ## 9. Testing
 
-Da das Tool schrittweise entlang einer wachsenden Businesslogik entstanden ist und die Anforderungen zu Beginn nicht vollständig feststanden, wurde auf automatisierte Tests verzichtet. Getestet wurde manuell über das CLI: Dokumente erzeugen und das Ergebnis visuell prüfen.
+Da das Tool schrittweise entlang einer wachsenden Businesslogik entstanden ist und die Anforderungen zu Beginn nicht vollständig feststanden, wurde zunächst auf automatisierte Tests verzichtet. Getestet wurde manuell über das CLI: Dokumente erzeugen und das Ergebnis visuell prüfen. (Hinweis: Im Zuge der geplanten Erweiterung wird das manuelle Testen durch automatisierte Tests abgelöst.)
 
 Folgende Projektnummern eignen sich als Testfälle:
 
