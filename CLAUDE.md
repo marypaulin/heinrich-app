@@ -2,8 +2,9 @@
 
 ## Entry points & responsibilities
 
-`services.py` is the sole public entry point for document generation. Both `app.py`
-(Streamlit) and `cli.py` call only `services.py` — never internal pipeline modules.
+`services.py` is the sole public entry point for document generation. The entry
+points (`app.py`, `cli.py`) call only `services.py` — never internal pipeline
+modules.
 
 Input validation and formatting of user-supplied arguments belongs in `input_args.py`,
 not in `services.py`.
@@ -48,10 +49,11 @@ working notes and is always fine to read.
 
 ## Style conventions
 
-- Private module-level functions: `_` prefix.
+- Language: code, docstrings and commit messages are in English; the decision log,
+  `notes/` and the README are in German. (For `Messages` and logging see Error
+  handling above.)
 - Long files are divided by section separators: `# — Section name ————————————————`.
 - Use relative imports within `src/backend/`.
-- Constants: `UPPER_CASE`.
 
 ## Git
 
