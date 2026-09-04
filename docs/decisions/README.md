@@ -12,6 +12,8 @@ Ein Eintrag pro Datei, `YYYY-MM-DD_kurzer-titel.md`, Format:
 
 Datum: YYYY-MM-DD
 
+Status: vorgeschlagen | angenommen | abgelöst
+
 **Kontext:** Was war die Ausgangslage / das Problem?
 
 **Entscheidung:** Was wurde entschieden?
@@ -21,3 +23,8 @@ Datum: YYYY-MM-DD
 **Konsequenzen:** Was folgt daraus (auch: was wird dadurch bewusst in Kauf
 genommen)?
 ```
+
+`Status:` sagt, woran man ist — *vorgeschlagen* (angeboten, noch nicht
+entschieden), *angenommen* (gilt), *abgelöst* (überholt, mit Verweis auf den
+Nachfolger). Ein abgelöster Eintrag wird **nicht gelöscht**: Die Begründung ist
+der Grund, warum es den Log gibt.

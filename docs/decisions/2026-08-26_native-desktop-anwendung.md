@@ -2,7 +2,9 @@
 
 Datum: 2026-08-26
 
-Status: vorgeschlagen — Teil des Angebots vom 26.08.2026, noch nicht beauftragt
+Status: abgelöst durch `2026-09-04_streamlit-statt-nativer-anwendung.md` — der
+Umbau war Teil des Angebots vom 27.08.2026 und wurde nicht beauftragt. Die
+Abwägung unten bleibt als Begründung erhalten.
 
 **Kontext:** Die Anwendung läuft als Streamlit-App aus dem Git-Clone und muss auf
 jedem Rechner einzeln eingerichtet werden. Der Kunde nutzt mehrere Rechner und
