@@ -99,12 +99,12 @@ def app():
         st.image("assets/logo.png")
 
     # Title
-    st.title("RHI Abrechnung")
+    st.title("Projektabrechnung")
 
     # Introduction
     st.markdown(
         "Erstelle **Angebote**, **Lieferscheine**, **Rechnungen** und **Auftragsbestätigungen** "
-        "mit nur wenigen Klicks direkt aus deinen Zeiterfassungsdaten."
+        "direkt aus deinen Zeiterfassungsdaten."
     )
 
     # Angebot
