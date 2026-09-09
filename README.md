@@ -137,17 +137,17 @@ Das Tool kann unter Windows als lokale Web-App genutzt werden, die per Doppelkli
 Als CLI-Tool wird das Programm im Projektordner über die Kommandozeile gestartet.
 
 Voraussetzungen:
-* Virtuelle Umgebung: `python -m venv .venv`
-* Installierte Abhängigkeiten: `pip install -r requirements.txt`
+* `uv` ist installiert
+* Einmalig im Projektordner: `uv sync`
 
 ### Angebot erzeugen
 
 ```
-python cli.py --mode offer --project-number 1235
+uv run python cli.py --mode offer --project-number 1235
 ```
 or short
 ```
-python cli.py -m offer -p 1235
+uv run python cli.py -m offer -p 1235
 ```
 
 ---
@@ -155,15 +155,15 @@ python cli.py -m offer -p 1235
 ### Lieferschein erzeugen
 
 ```
-python cli.py --mode delivery --project-number 1235
+uv run python cli.py --mode delivery --project-number 1235
 ```
 oder kurz
 ```
-python cli.py -m delivery -p 1235
+uv run python cli.py -m delivery -p 1235
 ```
 oder mit optionaler Belegnummer
 ```
-python cli.py -m delivery -p 1235 -r 4504049161
+uv run python cli.py -m delivery -p 1235 -r 4504049161
 ```
 
 
@@ -172,11 +172,11 @@ python cli.py -m delivery -p 1235 -r 4504049161
 ### Rechnung & Auftragsbestätigung erzeugen
 
 ```
-python cli.py --mode invoice --project-number 1235 --receipt-number 4504049161
+uv run python cli.py --mode invoice --project-number 1235 --receipt-number 4504049161
 ```
 oder kurz
 ```
-python cli.py -m invoice -p 1235 -r 4504049161
+uv run python cli.py -m invoice -p 1235 -r 4504049161
 ```
 
 ---
@@ -270,29 +270,29 @@ Folgende Projektnummern eignen sich als Testfälle:
 - 1253
 
 ```
-python cli.py -m offer -p 1218
-python cli.py -m delivery -p 1218
-python cli.py -m delivery -p 1218 -r 4504020708
-python cli.py -m invoice -p 1218 -r 4504020708
+uv run python cli.py -m offer -p 1218
+uv run python cli.py -m delivery -p 1218
+uv run python cli.py -m delivery -p 1218 -r 4504020708
+uv run python cli.py -m invoice -p 1218 -r 4504020708
 
-python cli.py -m offer -p 1223
-python cli.py -m delivery -p 1223
-python cli.py -m delivery -p 1223 -r 4504030989
-python cli.py -m invoice -p 1223 -r 4504030989
+uv run python cli.py -m offer -p 1223
+uv run python cli.py -m delivery -p 1223
+uv run python cli.py -m delivery -p 1223 -r 4504030989
+uv run python cli.py -m invoice -p 1223 -r 4504030989
 
-python cli.py -m offer -p 1235
-python cli.py -m delivery -p 1235
-python cli.py -m delivery -p 1235 -r 4504049161
-python cli.py -m invoice -p 1235 -r 4504049161
+uv run python cli.py -m offer -p 1235
+uv run python cli.py -m delivery -p 1235
+uv run python cli.py -m delivery -p 1235 -r 4504049161
+uv run python cli.py -m invoice -p 1235 -r 4504049161
 
-python cli.py -m offer -p 1236
-python cli.py -m delivery -p 1236
-python cli.py -m delivery -p 1236 -r 4504059903
-python cli.py -m invoice -p 1236 -r 4504059903
+uv run python cli.py -m offer -p 1236
+uv run python cli.py -m delivery -p 1236
+uv run python cli.py -m delivery -p 1236 -r 4504059903
+uv run python cli.py -m invoice -p 1236 -r 4504059903
 
-python cli.py -m offer -p 1253
-python cli.py -m delivery -p 1253
-python cli.py -m delivery -p 1253 -r 4504072524
-python cli.py -m invoice -p 1253 -r 4504072524
+uv run python cli.py -m offer -p 1253
+uv run python cli.py -m delivery -p 1253
+uv run python cli.py -m delivery -p 1253 -r 4504072524
+uv run python cli.py -m invoice -p 1253 -r 4504072524
 
 ```

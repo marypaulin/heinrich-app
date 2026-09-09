@@ -46,6 +46,10 @@ working notes and is always fine to read.
   `_replace_placeholder_across_runs`, `csv_rows_to_line_items` for examples of what
   warrants one).
 - Short one-line module docstrings at the top of each file.
+- Be explicit about what another developer would otherwise have to ask: a hidden
+  constraint, a tooling decision and its reasoning, a deliberate omission.
+- Never explain language or library mechanics. Only domain knowledge and decisions
+  get documented.
 
 ## Style conventions
 

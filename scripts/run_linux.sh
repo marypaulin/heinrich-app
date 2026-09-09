@@ -8,23 +8,24 @@ cd "$PROJECT_DIR"
 PORT=8502
 URL="http://localhost:${PORT}"
 
-# Wenn schon ein Streamlit-Server läuft: nur Browser öffnen und fertig
+# Server already running: just open the browser
 if curl -fsS "$URL" >/dev/null 2>&1; then
   xdg-open "$URL" >/dev/null 2>&1 || true
   exit 0
 fi
 
-# venv aktivieren (anpassen, falls anders)
-source .venv/bin/activate
+# Resolve uv explicitly: launched from the desktop entry, ~/.local/bin is not
+# guaranteed to be on PATH
+UV="$(command -v uv || echo "${HOME}/.local/bin/uv")"
 
-# Streamlit im Hintergrund starten, komplett still (kein Logfile)
-nohup python -m streamlit run app.py \
+# Start Streamlit detached and silent (no log file)
+nohup "$UV" run streamlit run app.py \
   --server.port "${PORT}" \
   --server.headless true \
   --browser.gatherUsageStats false \
   >/dev/null 2>&1 &
 
-# Warten bis Server erreichbar ist (max ~10 Sekunden)
+# Wait for the server to accept connections (max ~10 seconds)
 for _ in {1..50}; do
   if curl -fsS "$URL" >/dev/null 2>&1; then
     break
@@ -32,5 +33,5 @@ for _ in {1..50}; do
   sleep 0.2
 done
 
-# Browser öffnen
+# Open the browser
 xdg-open "$URL" >/dev/null 2>&1 || true
