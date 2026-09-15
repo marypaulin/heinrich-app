@@ -106,7 +106,7 @@ def csv_rows_to_line_items(
             logging.info(f"Creating material item for order number: {order_number}")
 
             kind = "material"
-            quantity = 1
+            quantity = 1.0
             # NOTE: Original CSV description currently not used upon customer request
             description = f"Material zu Auftrag Nr. {order_number}"
             unit_price = csv_row.material_cost
