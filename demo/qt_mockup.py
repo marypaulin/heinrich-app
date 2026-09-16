@@ -283,19 +283,19 @@ QCalendarWidget QToolButton:hover {{ background: {BG_CARD}; border-radius: 6px; 
 
 
 DEMO_TIMESHEET = [
-    [date(2025, 8, 1), "4504049161", "Geländer montiert", 8.0, 59.90, 0.00],
-    [date(2025, 8, 2), "4504049161", "Materialkauf Stahl", 0.0, 59.90, 212.40],
-    [date(2025, 8, 4), "4504049161", "Schweißarbeiten", 6.5, 59.90, 0.00],
-    [date(2025, 8, 5), "123", "Notiz ohne Auftrag", 2.0, 59.90, 0.00],
-    [date(2025, 8, 7), "4504049161", "Endmontage", 4.0, 72.00, 48.90],
+    [date(2025, 8, 1), "30014277", "Geländer montiert", 8.0, 62.50, 0.00],
+    [date(2025, 8, 2), "30014277", "Materialkauf Stahl", 0.0, 62.50, 212.40],
+    [date(2025, 8, 4), "30014277", "Schweißarbeiten", 6.5, 62.50, 0.00],
+    [date(2025, 8, 5), "123", "Notiz ohne Auftrag", 2.0, 62.50, 0.00],
+    [date(2025, 8, 7), "30014277", "Endmontage", 4.0, 78.00, 48.90],
 ]
 
 DEMO_HOURS = [
-    ("1235", "01.08.2025", "4504049161", "Meisterstunde", "8,0", "59,90 €", "479,20 €"),
-    ("1235", "04.08.2025", "4504049161", "Meisterstunde", "6,5", "59,90 €", "389,35 €"),
-    ("1235", "07.08.2025", "4504049161", "Meisterstunde", "4,0", "72,00 €", "288,00 €"),
-    ("1236", "12.08.2025", "4504059903", "Helferstunde", "7,5", "35,00 €", "262,50 €"),
-    ("1253", "09.09.2025", "4504072524", "Meisterstunde", "9,0", "59,90 €", "539,10 €"),
+    ("1408", "01.08.2025", "30014277", "Meisterstunde", "8,0", "62,50 €", "500,00 €"),
+    ("1408", "04.08.2025", "30014277", "Meisterstunde", "6,5", "62,50 €", "406,25 €"),
+    ("1408", "07.08.2025", "30014277", "Meisterstunde", "4,0", "78,00 €", "312,00 €"),
+    ("1409", "12.08.2025", "30015034", "Helferstunde", "7,5", "39,00 €", "292,50 €"),
+    ("1421", "09.09.2025", "30016185", "Meisterstunde", "9,0", "62,50 €", "562,50 €"),
 ]
 
 
@@ -608,8 +608,8 @@ class DocumentsPage(QWidget):
         self.doc_type.addItems(DOC_TYPES.keys())
         self.doc_type.currentTextChanged.connect(self._on_doc_type_changed)
 
-        self.project_number = QLineEdit(placeholderText="z. B. 1235")
-        self.receipt_number = QLineEdit(placeholderText="z. B. 4504049161")
+        self.project_number = QLineEdit(placeholderText="z. B. 1408")
+        self.receipt_number = QLineEdit(placeholderText="z. B. 8100045372")
 
         self.delivery_days = QSpinBox(minimum=0, maximum=365, suffix=" Tage")
         self.delivery_days.setMinimumWidth(120)
@@ -664,9 +664,9 @@ class DocumentsPage(QWidget):
             self.receipt_number.clear()
             self.receipt_number.setPlaceholderText("für Angebot nicht erforderlich")
         elif rule == "optional":
-            self.receipt_number.setPlaceholderText("optional — z. B. 4504049161")
+            self.receipt_number.setPlaceholderText("optional — z. B. 8100045372")
         else:
-            self.receipt_number.setPlaceholderText("erforderlich — z. B. 4504049161")
+            self.receipt_number.setPlaceholderText("erforderlich — z. B. 8100045372")
         self.delivery_days.setValue(default_days)
 
     def _on_days_changed(self, days: int):
@@ -681,7 +681,7 @@ class DocumentsPage(QWidget):
 
     def _on_generate(self):
         doc_type = self.doc_type.currentText()
-        project = self.project_number.text().strip() or "1235"
+        project = self.project_number.text().strip() or "1408"
         self.output.setPlainText(
             "\n".join(
                 [
@@ -768,7 +768,7 @@ class HoursPage(QWidget):
         ]
         table = _table(headers, DEMO_HOURS, stretch_column=3)
 
-        total = QLabel("Gesamt: 35,0 Stunden · 1.958,15 €")
+        total = QLabel("Gesamt: 35,0 Stunden · 2.073,25 €")
         total.setObjectName("Total")
 
         button_row = _row(

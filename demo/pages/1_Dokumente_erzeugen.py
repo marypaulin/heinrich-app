@@ -17,14 +17,14 @@ def run_lieferschein():
     project_number = st.session_state.get("project_number_liefer", "").strip()
 
     if not project_number:
-        st.session_state.liefer_info.append("Bitte Projektnummer eingeben (zB 1235).")
+        st.session_state.liefer_info.append("Bitte Projektnummer eingeben (zB 1408).")
         return
 
     try:
         st.session_state.liefer_info.append("Starte Lieferscheinerstellung")
         st.session_state.liefer_info.append(f"Projekt gewählt: {project_number}")
         st.session_state.liefer_info.append(
-            "Projektordner gefunden: 1235 - Allgemein Juli"
+            "Projektordner gefunden: 1408 - Allgemein Juli"
         )
         st.session_state.liefer_info.append(
             "CSV Datei gefunden: heinrich_zeiterfassung_2025-08-01.csv"
@@ -33,8 +33,8 @@ def run_lieferschein():
             "Achtung: Zeile 2 übersprungen wegen ungültiger Auftragsnummer 123"
         )
         st.session_state.liefer_info.append("Template geladen: Vordruck.docx")
-        st.session_state.liefer_info.append("DOCX erzeugt: Lieferschein Nr. 1235.docx")
-        st.session_state.liefer_info.append("PDF erzeugt: Lieferschein Nr. 1235.pdf")
+        st.session_state.liefer_info.append("DOCX erzeugt: Lieferschein Nr. 1408.docx")
+        st.session_state.liefer_info.append("PDF erzeugt: Lieferschein Nr. 1408.pdf")
 
         st.toast("Lieferschein erzeugt", icon="✅")
 
@@ -88,7 +88,7 @@ with st.form("lieferschein_form"):
         st.text_input(
             "Bitte Projektnummer eingeben",
             key="project_number_liefer",
-            placeholder="zB 1235",
+            placeholder="zB 1408",
         )
 
     st.form_submit_button("Lieferschein erzeugen", on_click=run_lieferschein)
@@ -109,7 +109,7 @@ with st.form("rechnung_form"):
         st.text_input(
             "Bitte Projektnummer eingeben",
             key="project_number_rechnung",
-            placeholder="zB 1235",
+            placeholder="zB 1408",
         )
     with col2:
         st.text_input(
