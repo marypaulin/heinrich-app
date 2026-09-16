@@ -117,7 +117,6 @@ def app():
             st.text_input(
                 "Bitte Projektnummer eingeben",
                 key="project_number_offer",
-                placeholder="zB 1235",
             )
 
         st.form_submit_button(
@@ -145,14 +144,12 @@ def app():
             st.text_input(
                 "Bitte Projektnummer eingeben",
                 key="project_number_delivery",
-                placeholder="zB 1235",
             )
 
         with col2:
             st.text_input(
                 "Optional Belegnummer eingeben",
                 key="receipt_number_delivery",
-                placeholder="zB 4504049161",
             )
 
         st.form_submit_button(
@@ -180,14 +177,12 @@ def app():
             st.text_input(
                 "Bitte Projektnummer eingeben",
                 key="project_number_invoice",
-                placeholder="zB 1235",
             )
 
         with col2:
             st.text_input(
                 "Bitte Belegnummer eingeben",
                 key="receipt_number_invoice",
-                placeholder="zB 4504049161",
             )
 
         st.form_submit_button(
