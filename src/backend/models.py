@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Literal
 
 from .formatting import format_price
@@ -16,6 +17,11 @@ from .placeholders import (
     PH_SUM_NET,
     PH_VAT,
 )
+
+
+def _round_cents(value: float) -> float:
+    """Round to cents the commercial way (half up), not Python's half-to-even."""
+    return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 @dataclass
@@ -51,9 +57,14 @@ class Totals:
     def calculate_sums_and_vat(
         line_items: list["LineItem"], vat_rate: float
     ) -> "Totals":
-        """Calculate sum_net, vat, and sum_gross from LineItems."""
-        sum_net = sum(line_item.total_price for line_item in line_items)
-        vat = sum_net * vat_rate
+        """Calculate sum_net, vat, and sum_gross from LineItems.
+
+        Each value is rounded to cents in order, and the VAT is calculated from
+        the already rounded net sum. Rounding all three independently from the
+        raw sums would let the three amounts printed on the document differ by a cent.
+        """
+        sum_net = _round_cents(sum(line_item.total_price for line_item in line_items))
+        vat = _round_cents(sum_net * vat_rate)
         sum_gross = sum_net + vat
         return Totals(sum_net=sum_net, vat=vat, sum_gross=sum_gross)
 
