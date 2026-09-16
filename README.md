@@ -143,11 +143,11 @@ Voraussetzungen:
 ### Angebot erzeugen
 
 ```
-uv run python cli.py --mode offer --project-number 1235
+uv run python cli.py --mode offer --project-number 1408
 ```
 or short
 ```
-uv run python cli.py -m offer -p 1235
+uv run python cli.py -m offer -p 1408
 ```
 
 ---
@@ -155,15 +155,15 @@ uv run python cli.py -m offer -p 1235
 ### Lieferschein erzeugen
 
 ```
-uv run python cli.py --mode delivery --project-number 1235
+uv run python cli.py --mode delivery --project-number 1408
 ```
 oder kurz
 ```
-uv run python cli.py -m delivery -p 1235
+uv run python cli.py -m delivery -p 1408
 ```
 oder mit optionaler Belegnummer
 ```
-uv run python cli.py -m delivery -p 1235 -r 4504049161
+uv run python cli.py -m delivery -p 1408 -r 8100045372
 ```
 
 
@@ -172,11 +172,11 @@ uv run python cli.py -m delivery -p 1235 -r 4504049161
 ### Rechnung & Auftragsbestätigung erzeugen
 
 ```
-uv run python cli.py --mode invoice --project-number 1235 --receipt-number 4504049161
+uv run python cli.py --mode invoice --project-number 1408 --receipt-number 8100045372
 ```
 oder kurz
 ```
-uv run python cli.py -m invoice -p 1235 -r 4504049161
+uv run python cli.py -m invoice -p 1408 -r 8100045372
 ```
 
 ---
@@ -259,40 +259,10 @@ Folgende Erweiterungen sind geplant:
 
 ## 9. Testing
 
-Da das Tool schrittweise entlang einer wachsenden Businesslogik entstanden ist und die Anforderungen zu Beginn nicht vollständig feststanden, wurde zunächst auf automatisierte Tests verzichtet. Getestet wurde manuell über das CLI: Dokumente erzeugen und das Ergebnis visuell prüfen. (Hinweis: Im Zuge der geplanten Erweiterung wird das manuelle Testen durch automatisierte Tests abgelöst.)
-
-Folgende Projektnummern eignen sich als Testfälle:
-
-- 1218
-- 1223
-- 1235
-- 1236
-- 1253
+Die Tests liegen unter `tests/` und laufen mit pytest:
 
 ```
-uv run python cli.py -m offer -p 1218
-uv run python cli.py -m delivery -p 1218
-uv run python cli.py -m delivery -p 1218 -r 4504020708
-uv run python cli.py -m invoice -p 1218 -r 4504020708
-
-uv run python cli.py -m offer -p 1223
-uv run python cli.py -m delivery -p 1223
-uv run python cli.py -m delivery -p 1223 -r 4504030989
-uv run python cli.py -m invoice -p 1223 -r 4504030989
-
-uv run python cli.py -m offer -p 1235
-uv run python cli.py -m delivery -p 1235
-uv run python cli.py -m delivery -p 1235 -r 4504049161
-uv run python cli.py -m invoice -p 1235 -r 4504049161
-
-uv run python cli.py -m offer -p 1236
-uv run python cli.py -m delivery -p 1236
-uv run python cli.py -m delivery -p 1236 -r 4504059903
-uv run python cli.py -m invoice -p 1236 -r 4504059903
-
-uv run python cli.py -m offer -p 1253
-uv run python cli.py -m delivery -p 1253
-uv run python cli.py -m delivery -p 1253 -r 4504072524
-uv run python cli.py -m invoice -p 1253 -r 4504072524
-
+uv run pytest
 ```
+
+Die Abdeckung wächst modulweise mit; das PDF-Rendering wird weiterhin manuell geprüft.
