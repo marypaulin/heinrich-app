@@ -29,7 +29,9 @@ working notes and is always fine to read.
   and let them bubble up to the entry point.
 - Non-fatal warnings and status messages for the UI: accumulate via `Messages.info()` /
   `.warning()` and return them — never use `print()`.
-- Logging messages are in English; `Messages` entries shown to the user are in German.
+- Logging messages and `raise` texts are in English; `Messages` entries shown to the
+  user are in German. An exception text is logged as well as displayed, so it follows
+  the logging rule — turning it into German UI text is the entry point's job.
 
 ## Models
 
