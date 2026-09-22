@@ -33,10 +33,7 @@ def run_offer(config):
     st.session_state.offer_info = []
     st.session_state.offer_error = None
 
-    project_number = st.session_state.get("project_number_offer", "").strip()
-    if not project_number:
-        st.session_state.offer_info.append("Bitte eine Projektnummer eingeben.")
-        return
+    project_number = st.session_state.get("project_number_offer", "")
 
     try:
         st.session_state.offer_info = generate_offer(project_number, config)
@@ -50,12 +47,8 @@ def run_delivery(config):
     st.session_state.delivery_info = []
     st.session_state.delivery_error = None
 
-    project_number = st.session_state.get("project_number_delivery", "").strip()
-    if not project_number:
-        st.session_state.delivery_info.append("Bitte eine Projektnummer eingeben.")
-        return
-
-    receipt_number = st.session_state.get("receipt_number_delivery", "").strip() or None
+    project_number = st.session_state.get("project_number_delivery", "")
+    receipt_number = st.session_state.get("receipt_number_delivery", "")
 
     try:
         st.session_state.delivery_info = generate_delivery(
@@ -71,12 +64,8 @@ def run_invoice(config):
     st.session_state.invoice_info = []
     st.session_state.invoice_error = []
 
-    project_number = st.session_state.get("project_number_invoice", "").strip()
-    receipt_number = st.session_state.get("receipt_number_invoice", "").strip()
-
-    if not project_number or not receipt_number:
-        st.session_state.invoice_info.append("Bitte Projekt- und Belegnummer eingeben.")
-        return
+    project_number = st.session_state.get("project_number_invoice", "")
+    receipt_number = st.session_state.get("receipt_number_invoice", "")
 
     try:
         st.session_state.invoice_info = generate_invoice_and_order(
