@@ -1,0 +1,5 @@
+# The sample export must keep its exact bytes, line endings included.
+tests/fixtures/*.csv -text
+
+# cmd.exe needs CRLF: with LF-only files `goto` can miss its label.
+*.bat text eol=crlf
