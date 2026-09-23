@@ -31,9 +31,9 @@ class CsvRow:
     order_number: str  # "Auftrags-Nr."
     description: str  # "Beschreibung"
     duration_hours: float  # "Dauer (Std)"
-    hourly_rate: float  # "Stundensatz (€)"
-    material_cost: float  # "Material (€)"
-    total_cost: float  # "Gesamtkosten (€)" - just for debugging
+    hourly_rate: float  # "Stundensatz"
+    material_cost: float  # "Material"
+    total_cost: float  # "Gesamt" - just for debugging
 
 
 @dataclass

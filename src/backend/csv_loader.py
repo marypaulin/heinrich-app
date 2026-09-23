@@ -13,9 +13,9 @@ CSV_COL_DATE = "Datum"
 CSV_COL_ORDER_NUMBER = "Auftrags-Nr."
 CSV_COL_DESC = "Beschreibung"
 CSV_COL_DURATION = "Dauer (Std)"
-CSV_COL_HOURLY_RATE = "Stundensatz (€)"
-CSV_COL_MATERIAL = "Material (€)"
-CSV_COL_TOTAL = "Gesamtkosten (€)"
+CSV_COL_HOURLY_RATE = "Stundensatz"
+CSV_COL_MATERIAL = "Material"
+CSV_COL_TOTAL = "Gesamt"
 
 # Required fields that must be filled
 REQUIRED_FIELDS = [
@@ -61,9 +61,9 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
         "Auftrags-Nr."      → order_number
         "Beschreibung"      → description
         "Dauer (Std)"       → duration_hours
-        "Stundensatz (€)"   → hourly_rate
-        "Material (€)"      → material_cost
-        "Gesamtkosten (€)"  → total_cost
+        "Stundensatz"       → hourly_rate
+        "Material"          → material_cost
+        "Gesamt"            → total_cost
 
     Parameters:
         csv_path: Path to the CSV file to load.
