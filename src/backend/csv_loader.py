@@ -76,7 +76,7 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
         ValueError: If required fields are missing or values cannot be parsed.
         FileNotFoundError: If the CSV file does not exist.
     """
-    with open(csv_path, newline="", encoding="utf-8") as f:
+    with open(csv_path, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f, delimiter=";")
         rows = list(reader)
 
