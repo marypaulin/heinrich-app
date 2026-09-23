@@ -54,17 +54,6 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
     - parsing strings into typed values (date, float),
     - and creating typed CsvRow domain objects.
 
-    Column-to-attribute mapping:
-        CSV column          → CsvRow attribute
-        ---------------------------------------
-        "Datum"             → date
-        "Auftrags-Nr."      → order_number
-        "Beschreibung"      → description
-        "Dauer (Std)"       → duration_hours
-        "Stundensatz"       → hourly_rate
-        "Material"          → material_cost
-        "Gesamt"            → total_cost
-
     Parameters:
         csv_path: Path to the CSV file to load.
         config: Application configuration (used for date parsing).

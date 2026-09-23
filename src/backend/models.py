@@ -26,14 +26,14 @@ def _round_cents(value: float) -> float:
 
 @dataclass
 class CsvRow:
-    row_number: int  # For debugging
-    date: date  # "Datum" - aus "%d.%m.%Y" geparst
-    order_number: str  # "Auftrags-Nr."
-    description: str  # "Beschreibung"
-    duration_hours: float  # "Dauer (Std)"
-    hourly_rate: float  # "Stundensatz"
-    material_cost: float  # "Material"
-    total_cost: float  # "Gesamt" - just for debugging
+    row_number: int
+    date: date
+    order_number: str
+    description: str
+    duration_hours: float
+    hourly_rate: float
+    material_cost: float
+    total_cost: float  # Not used, totals are always recomputed
 
 
 @dataclass
