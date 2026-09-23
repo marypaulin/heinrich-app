@@ -51,8 +51,7 @@ def csv_rows_to_line_items(
         total_price <- material_cost
 
     Validation and filtering:
-    - Rows with invalid order numbers (non-numeric or not 8 digits)
-      are skipped.
+    - Rows without an order number are skipped.
     - All numeric values are assumed to be already parsed and validated
       in the CSV loader.
 
@@ -68,14 +67,10 @@ def csv_rows_to_line_items(
     result = []
     for csv_row in csv_rows:
         order_number = csv_row.order_number
-        if not order_number.isdigit() or len(order_number) != 8:
-            logging.info(
-                f"Skipping csv_row {csv_row.row_number} "
-                f"with invalid order number: {order_number}"
-            )
+        if not order_number:
+            logging.info(f"Skipping csv_row {csv_row.row_number} without order number")
             messages.warning(
-                f"Überspringe Zeile {csv_row.row_number} "
-                f"mit ungültiger Auftrags-Nr. {order_number}"
+                f"Überspringe Zeile {csv_row.row_number}: Keine Auftrags-Nr. angegeben."
             )
             continue
 

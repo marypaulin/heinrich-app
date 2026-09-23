@@ -18,8 +18,8 @@ CSV_COL_MATERIAL = "Material"
 CSV_COL_TOTAL = "Gesamt"
 
 # Required fields that must be filled
+# Order number is left out on purpose: csv_transformer skips rows without one
 REQUIRED_FIELDS = [
-    CSV_COL_ORDER_NUMBER,
     CSV_COL_DURATION,
     CSV_COL_HOURLY_RATE,
     CSV_COL_MATERIAL,
@@ -83,7 +83,7 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
         csv_row = CsvRow(
             row_number=row_number,
             date=_parse_date(row_number, row[CSV_COL_DATE], config),
-            order_number=row[CSV_COL_ORDER_NUMBER],
+            order_number=row[CSV_COL_ORDER_NUMBER].strip(),
             description=row[CSV_COL_DESC],
             duration_hours=_parse_float(row_number, row[CSV_COL_DURATION]),
             hourly_rate=_parse_float(row_number, row[CSV_COL_HOURLY_RATE]),
