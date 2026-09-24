@@ -30,7 +30,7 @@ def _parse_date(i: int, value: str, config: Config) -> date:
     """Parse str to date from config.date_format"""
     value = value.strip()
     try:
-        return datetime.strptime(value, config.date_format)
+        return datetime.strptime(value, config.date_format).date()
     except ValueError:
         raise ValueError(f"Invalid date format in row {i}: {value}")
 

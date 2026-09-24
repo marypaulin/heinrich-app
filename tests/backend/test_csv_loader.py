@@ -1,6 +1,6 @@
 """Tests for reading the time-tracking CSV file into typed rows."""
 
-from datetime import datetime
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -50,7 +50,7 @@ def test_first_row_is_read_completely():
 
     assert rows[0] == CsvRow(
         row_number=1,
-        date=datetime(2025, 7, 7),
+        date=date(2025, 7, 7),
         order_number="123",
         description="Zuschnitt Flachstahl",
         duration_hours=1.0,
