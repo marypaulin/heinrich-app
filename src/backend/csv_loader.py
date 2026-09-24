@@ -17,9 +17,18 @@ CSV_COL_HOURLY_RATE = "Stundensatz"
 CSV_COL_MATERIAL = "Material"
 CSV_COL_TOTAL = "Gesamt"
 
-# Required fields that must be filled
+REQUIRED_COLUMNS = [
+    CSV_COL_DATE,
+    CSV_COL_ORDER_NUMBER,
+    CSV_COL_DESC,
+    CSV_COL_DURATION,
+    CSV_COL_HOURLY_RATE,
+    CSV_COL_MATERIAL,
+    CSV_COL_TOTAL,
+]
+
 # Order number is left out on purpose: csv_transformer skips rows without one
-REQUIRED_FIELDS = [
+REQUIRED_VALUES = [
     CSV_COL_DURATION,
     CSV_COL_HOURLY_RATE,
     CSV_COL_MATERIAL,
@@ -50,7 +59,7 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
 
     This function is responsible for:
     - reading the CSV file,
-    - validating required columns,
+    - validating required columns and values,
     - parsing strings into typed values (date, float),
     - and creating typed CsvRow domain objects.
 
@@ -68,16 +77,22 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
     with open(csv_path, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f, delimiter=";")
         rows = list(reader)
+        header = reader.fieldnames or []
+
+    missing_columns = [column for column in REQUIRED_COLUMNS if column not in header]
+    if missing_columns:
+        raise ValueError(
+            f"Missing column(s) in CSV header: {', '.join(missing_columns)}"
+        )
 
     result = []
 
     # Row numbering starts at 1; row 0 is the header (consumed by DictReader)
     for row_number, row in enumerate(rows, start=1):
-        # Check required fields
-        missing = [field for field in REQUIRED_FIELDS if not row.get(field)]
-        if missing:
+        missing_values = [field for field in REQUIRED_VALUES if not row.get(field)]
+        if missing_values:
             raise ValueError(
-                f"Missing value(s) in row {row_number}: {', '.join(missing)}"
+                f"Missing value(s) in row {row_number}: {', '.join(missing_values)}"
             )
 
         csv_row = CsvRow(

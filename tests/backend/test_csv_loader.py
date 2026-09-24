@@ -23,6 +23,12 @@ CONFIG = Config(
 )
 
 
+def write_lines(tmp_path: Path, lines: list[str]) -> Path:
+    csv_path = tmp_path / "variant.csv"
+    csv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return csv_path
+
+
 def write_variant(tmp_path: Path, row: int, column: str, value: str) -> Path:
     """Write the fixture with one field replaced; `row` counts data rows from 1."""
     lines = FIXTURE.read_text(encoding="utf-8").splitlines()
@@ -30,10 +36,18 @@ def write_variant(tmp_path: Path, row: int, column: str, value: str) -> Path:
     fields = lines[row].split(FIXTURE_DELIMITER)
     fields[header.index(column)] = f'"{value}"'
     lines[row] = FIXTURE_DELIMITER.join(fields)
+    return write_lines(tmp_path, lines)
 
-    csv_path = tmp_path / "variant.csv"
-    csv_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return csv_path
+
+def write_without_column(tmp_path: Path, column: str) -> Path:
+    lines = FIXTURE.read_text(encoding="utf-8").splitlines()
+    index = lines[0].split(FIXTURE_DELIMITER).index(column)
+    trimmed = []
+    for line in lines:
+        fields = line.split(FIXTURE_DELIMITER)
+        del fields[index]
+        trimmed.append(FIXTURE_DELIMITER.join(fields))
+    return write_lines(tmp_path, trimmed)
 
 
 # — Reading ———————————————————————————————————————————————————————————————————
@@ -90,6 +104,25 @@ def test_blank_order_number_becomes_empty(tmp_path):
 
 
 # — Errors ————————————————————————————————————————————————————————————————————
+
+
+@pytest.mark.parametrize(
+    "column",
+    [
+        "Datum",
+        "Auftrags-Nr.",
+        "Beschreibung",
+        "Dauer (Std)",
+        "Stundensatz",
+        "Material",
+        "Gesamt",
+    ],
+)
+def test_missing_column_is_rejected(tmp_path, column):
+    csv_path = write_without_column(tmp_path, column)
+
+    with pytest.raises(ValueError):
+        load_csv_data(csv_path, CONFIG)
 
 
 @pytest.mark.parametrize("column", ["Dauer (Std)", "Stundensatz", "Material"])
