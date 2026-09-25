@@ -24,7 +24,7 @@ def _round_cents(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
-@dataclass
+@dataclass(frozen=True)
 class CsvRow:
     row_number: int
     date: date
@@ -36,15 +36,14 @@ class CsvRow:
     total_cost: float  # Not used, totals are always recomputed
 
 
-@dataclass
+@dataclass(frozen=True)
 class LineItem:
-    # CSV rows split into two kinds
     kind: Literal["hours", "material"]
-    order_number: str  # "Auftrag Nr."
-    quantity: float  # "Menge"
-    description: str  # "Beschreibung"
-    unit_price: float  # "€/Stk"
-    total_price: float  # "Preis gesamt" = €/Stk * Menge
+    order_number: str
+    quantity: float
+    description: str
+    unit_price: float
+    total_price: float
 
 
 @dataclass(frozen=True)
