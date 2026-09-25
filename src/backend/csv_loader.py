@@ -29,6 +29,9 @@ REQUIRED_COLUMNS = [
     CSV_COL_TOTAL,
 ]
 
+# The customer records time in half hours only
+HOUR_STEP = Decimal("0.5")
+
 # Order number is left out on purpose: csv_transformer skips rows without one
 REQUIRED_VALUES = [
     CSV_COL_DURATION,
@@ -53,6 +56,14 @@ def _parse_decimal(i: int, value: str) -> Decimal:
         return Decimal(value)
     except InvalidOperation:
         raise ValueError(f"Invalid numeric value in row {i}: {value}") from None
+
+
+def _parse_hours(i: int, value: str) -> Decimal:
+    """Parse a duration; anything off the half hour is taken for a typo."""
+    hours = _parse_decimal(i, value)
+    if hours % HOUR_STEP != 0:
+        raise ValueError(f"Invalid hours in row {i}: {hours} (half hours only)")
+    return hours
 
 
 def _parse_amount(i: int, value: str) -> Decimal:
@@ -110,7 +121,7 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
             date=_parse_date(row_number, row[CSV_COL_DATE], config),
             order_number=row[CSV_COL_ORDER_NUMBER].strip(),
             description=row[CSV_COL_DESC],
-            duration_hours=_parse_decimal(row_number, row[CSV_COL_DURATION]),
+            duration_hours=_parse_hours(row_number, row[CSV_COL_DURATION]),
             hourly_rate=_parse_amount(row_number, row[CSV_COL_HOURLY_RATE]),
             material_cost=_parse_amount(row_number, row[CSV_COL_MATERIAL]),
             total_cost=_parse_decimal(row_number, row[CSV_COL_TOTAL]),

@@ -159,6 +159,13 @@ def test_amount_with_more_than_two_decimals_is_rejected(tmp_path, column):
         load_csv_data(csv_path, CONFIG)
 
 
+def test_hours_off_the_half_hour_are_rejected(tmp_path):
+    csv_path = write_variant(tmp_path, row=1, column="Dauer (Std)", value="2.25")
+
+    with pytest.raises(ValueError):
+        load_csv_data(csv_path, CONFIG)
+
+
 def test_broken_date_is_rejected(tmp_path):
     csv_path = write_variant(tmp_path, row=1, column="Datum", value="2025-07-07")
 
