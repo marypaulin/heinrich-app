@@ -53,17 +53,17 @@ def write_without_column(tmp_path: Path, column: str) -> Path:
 # — Reading ———————————————————————————————————————————————————————————————————
 
 
-def test_fixture_yields_all_rows_numbered_from_one():
+def test_fixture_rows_are_numbered_like_excel():
     rows = load_csv_data(FIXTURE, CONFIG)
 
-    assert [row.row_number for row in rows] == list(range(1, 9))
+    assert [row.row_number for row in rows] == list(range(2, 10))
 
 
 def test_first_row_is_read_completely():
     rows = load_csv_data(FIXTURE, CONFIG)
 
     assert rows[0] == CsvRow(
-        row_number=1,
+        row_number=2,
         date=date(2025, 7, 7),
         order_number="123",
         description="Zuschnitt Flachstahl",

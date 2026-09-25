@@ -41,7 +41,7 @@ def _parse_date(i: int, value: str, config: Config) -> date:
     try:
         return datetime.strptime(value, config.date_format).date()
     except ValueError:
-        raise ValueError(f"Invalid date format in row {i}: {value}")
+        raise ValueError(f"Invalid date format in row {i}: {value}") from None
 
 
 def _parse_float(i: int, value: str) -> float:
@@ -50,7 +50,7 @@ def _parse_float(i: int, value: str) -> float:
     try:
         return float(value)
     except ValueError:
-        raise ValueError(f"Invalid numeric value in row {i}: {value}")
+        raise ValueError(f"Invalid numeric value in row {i}: {value}") from None
 
 
 def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
@@ -87,8 +87,8 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
 
     result = []
 
-    # Row numbering starts at 1; row 0 is the header (consumed by DictReader)
-    for row_number, row in enumerate(rows, start=1):
+    # Start at 2 so error messages match the row numbers Excel shows
+    for row_number, row in enumerate(rows, start=2):
         missing_values = [field for field in REQUIRED_VALUES if not row.get(field)]
         if missing_values:
             raise ValueError(
