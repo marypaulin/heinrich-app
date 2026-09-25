@@ -20,6 +20,10 @@ in Claude's memory for this project.
 - `RHI/`
 - `templates/Vordruck.docx` — use `templates/Vordruck_sample.docx` instead
 
+Substitutes for customer data are named `_sample`: `Vordruck_sample.docx`,
+`heinrich_zeiterfassung_sample.csv`, later `config_sample.json` (not
+`config.example.json`).
+
 `notes/` is gitignored too but holds no customer data — it's the user's own
 working notes and is always fine to read.
 
@@ -39,6 +43,16 @@ working notes and is always fine to read.
   mutating.
 - Domain models that map to Word template placeholders expose a `to_mapping()` method
   returning `dict[str, str]`.
+
+## Money
+
+- Money amounts and hours are `Decimal`, never `float`, from config and CSV to
+  the printed document. Build them from strings for data (`Decimal("65.00")`),
+  from ints for constants (`Decimal(1)`).
+- Cent precision lives only in `money.py` (`CENT`, `round_cents`, commercial
+  half-up rounding). Round where an amount is calculated; only products need
+  it, sums of cent amounts stay exact. `format_price` never rounds, it rejects
+  unrounded amounts.
 
 ## Comments and docstrings
 
@@ -61,6 +75,16 @@ working notes and is always fine to read.
 - Long files are divided by section separators: `# — Section name ————————————————`.
 - Use relative imports within `src/backend/`.
 
+## Testing
+
+- One test file per source module: `tests/backend/test_<module>.py`, or
+  `test_<module>_<object>.py` when a module holds several domain objects.
+- Test only cases that occur in real use.
+- Error tests check the exception type, never the message text.
+- Test data lives in `tests/fixtures/` and is invented: numbers with realistic
+  digit counts (project 4, order number usually 8, receipt 10). Never real
+  customer data; the repository is public.
+
 ## Git
 
 Commit conventions live in the global `commit-work` skill. Project specifics
@@ -68,5 +92,7 @@ that override or fill in what the skill leaves open:
 
 - Scopes: `backend`, `ui`, `cli`, `docs`, `build`. Leave the scope out when none
   of them fits.
-- Verification: `ruff check .`, for commits that touch `.py` files. There is no
-  test suite yet; documentation-only commits need no check.
+- Behavior changes get their own commit, separate from refactors and tests, so
+  `git log` explains why an old invoice shows a different number.
+- Verification: `ruff check .` and `uv run pytest -q`, for commits that touch
+  `.py` files. Documentation-only commits need no check.
