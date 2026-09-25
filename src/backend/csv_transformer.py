@@ -7,6 +7,7 @@ from decimal import Decimal
 from .config import Config
 from .messages import Messages
 from .models import CsvRow, LineItem
+from .money import round_cents
 
 
 def _get_hourly_description(
@@ -34,7 +35,7 @@ def _hours_item(csv_row: CsvRow, config: Config, messages: Messages) -> LineItem
         quantity=csv_row.duration_hours,
         description=f"{hourly_description} zu Auftrag Nr. {csv_row.order_number}",
         unit_price=csv_row.hourly_rate,
-        total_price=csv_row.hourly_rate * csv_row.duration_hours,
+        total_price=round_cents(csv_row.hourly_rate * csv_row.duration_hours),
     )
 
 
@@ -70,7 +71,7 @@ def csv_rows_to_line_items(
     - Hours LineItem:
         quantity    <- CsvRow.duration_hours
         unit_price  <- CsvRow.hourly_rate
-        total_price <- hourly_rate * duration
+        total_price <- hourly_rate * duration, rounded to cents
     - Material LineItem:
         quantity    <- 1
         unit_price  <- CsvRow.material_cost

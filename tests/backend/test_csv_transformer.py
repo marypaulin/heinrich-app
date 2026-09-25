@@ -84,6 +84,15 @@ def test_unknown_hourly_rate_falls_back_to_default_with_warning():
     assert len(messages) == 1
 
 
+def test_line_total_is_rounded_to_cents_half_up():
+    line_items, _ = csv_rows_to_line_items(
+        [csv_row(duration_hours=Decimal("0.50"), hourly_rate=Decimal("60.25"))],
+        CONFIG,
+    )
+
+    assert line_items[0].total_price == Decimal("30.13")
+
+
 # — Material ————————————————————————————————————————————————————————————————————
 
 
