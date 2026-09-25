@@ -2,6 +2,7 @@
 
 import json
 from dataclasses import dataclass
+from decimal import Decimal
 from pathlib import Path
 
 
@@ -15,16 +16,16 @@ class DocumentConfig:
 @dataclass(frozen=True)
 class Config:
     data_root: Path
-    hourly_rate_mapping: dict[float, str]
+    hourly_rate_mapping: dict[Decimal, str]
     hourly_rate_default: str
     date_format: str
-    vat_rate: float
+    vat_rate: Decimal
     documents: dict[str, DocumentConfig]
     filenames: dict[str, str]
 
 
 def load_config(path: Path) -> Config:
-    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw = json.loads(path.read_text(encoding="utf-8"), parse_float=Decimal)
 
     data_root_raw = Path(raw["DATA_ROOT"])
 
@@ -34,11 +35,11 @@ def load_config(path: Path) -> Config:
         data_root = path.parent / data_root_raw
 
     mapping_raw = raw["HOURLY_RATE_MAPPING"]
-    mapping_converted = {float(k): v for k, v in mapping_raw.items()}
+    mapping_converted = {Decimal(k): v for k, v in mapping_raw.items()}
 
     default_description = raw["HOURLY_RATE_DEFAULT"]
     date_format = raw["DATE_FORMAT"]
-    vat_rate = float(raw["VAT_RATE"])
+    vat_rate = Decimal(raw["VAT_RATE"])
 
     documents_raw = raw["DOCUMENTS"]
     documents = {}

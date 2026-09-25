@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Iterable
+from decimal import Decimal
 
 from .config import Config
 from .messages import Messages
@@ -9,7 +10,7 @@ from .models import CsvRow, LineItem
 
 
 def _get_hourly_description(
-    hourly_rate: float, config: Config, messages: Messages
+    hourly_rate: Decimal, config: Config, messages: Messages
 ) -> str:
     """Get description based on hourly rate"""
     if hourly_rate in config.hourly_rate_mapping:
@@ -42,7 +43,7 @@ def _material_item(csv_row: CsvRow) -> LineItem:
     return LineItem(
         kind="material",
         order_number=csv_row.order_number,
-        quantity=1.0,
+        quantity=Decimal(1),
         # NOTE: Original CSV description currently not used upon customer request
         description=f"Material zu Auftrag Nr. {csv_row.order_number}",
         unit_price=csv_row.material_cost,

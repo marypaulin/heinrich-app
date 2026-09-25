@@ -2,10 +2,11 @@
 
 from dataclasses import dataclass
 from datetime import date
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 from typing import Literal
 
 from .formatting import format_price
+from .money import round_cents
 from .placeholders import (
     PH_DATE_TODAY,
     PH_DELIVERY_DATE,
@@ -19,42 +20,37 @@ from .placeholders import (
 )
 
 
-def _round_cents(value: float) -> float:
-    """Round to cents the commercial way (half up), not Python's half-to-even."""
-    return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
-
 @dataclass(frozen=True)
 class CsvRow:
     row_number: int
     date: date
     order_number: str
     description: str
-    duration_hours: float
-    hourly_rate: float
-    material_cost: float
-    total_cost: float  # Not used, totals are always recomputed
+    duration_hours: Decimal
+    hourly_rate: Decimal
+    material_cost: Decimal
+    total_cost: Decimal  # Not used, totals are always recomputed
 
 
 @dataclass(frozen=True)
 class LineItem:
     kind: Literal["hours", "material"]
     order_number: str
-    quantity: float
+    quantity: Decimal
     description: str
-    unit_price: float
-    total_price: float
+    unit_price: Decimal
+    total_price: Decimal
 
 
 @dataclass(frozen=True)
 class Totals:
-    sum_net: float
-    vat: float
-    sum_gross: float
+    sum_net: Decimal
+    vat: Decimal
+    sum_gross: Decimal
 
     @staticmethod
     def calculate_sums_and_vat(
-        line_items: list["LineItem"], vat_rate: float
+        line_items: list["LineItem"], vat_rate: Decimal
     ) -> "Totals":
         """Calculate sum_net, vat, and sum_gross from LineItems.
 
@@ -62,8 +58,10 @@ class Totals:
         the already rounded net sum. Rounding all three independently from the
         raw sums would let the three amounts printed on the document differ by a cent.
         """
-        sum_net = _round_cents(sum(line_item.total_price for line_item in line_items))
-        vat = _round_cents(sum_net * vat_rate)
+        sum_net = round_cents(
+            sum((line_item.total_price for line_item in line_items), Decimal(0))
+        )
+        vat = round_cents(sum_net * vat_rate)
         sum_gross = sum_net + vat
         return Totals(sum_net=sum_net, vat=vat, sum_gross=sum_gross)
 

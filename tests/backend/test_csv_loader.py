@@ -1,6 +1,7 @@
 """Tests for reading the time-tracking CSV file into typed rows."""
 
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,7 @@ CONFIG = Config(
     hourly_rate_mapping={},
     hourly_rate_default="",
     date_format="%d.%m.%Y",
-    vat_rate=0.19,
+    vat_rate=Decimal("0.19"),
     documents={},
     filenames={},
 )
@@ -67,11 +68,21 @@ def test_first_row_is_read_completely():
         date=date(2025, 7, 7),
         order_number="123",
         description="Zuschnitt Flachstahl",
-        duration_hours=1.0,
-        hourly_rate=65.0,
-        material_cost=95.0,
-        total_cost=160.0,
+        duration_hours=Decimal("1.00"),
+        hourly_rate=Decimal("65.00"),
+        material_cost=Decimal("95.00"),
+        total_cost=Decimal("160.00"),
     )
+
+
+def test_numbers_are_read_as_decimal():
+    """A float would still compare equal to the Decimal in the test above."""
+    row = load_csv_data(FIXTURE, CONFIG)[0]
+
+    assert type(row.duration_hours) is Decimal
+    assert type(row.hourly_rate) is Decimal
+    assert type(row.material_cost) is Decimal
+    assert type(row.total_cost) is Decimal
 
 
 def test_umlauts_and_sharp_s_survive():

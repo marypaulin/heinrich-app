@@ -4,6 +4,7 @@ CSV loading utility
 
 import csv
 from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from .config import Config
@@ -44,12 +45,12 @@ def _parse_date(i: int, value: str, config: Config) -> date:
         raise ValueError(f"Invalid date format in row {i}: {value}") from None
 
 
-def _parse_float(i: int, value: str) -> float:
+def _parse_decimal(i: int, value: str) -> Decimal:
     """Replace comma with dot, strip spaces, handle both ',' and '.'"""
     value = value.strip().replace(",", ".")
     try:
-        return float(value)
-    except ValueError:
+        return Decimal(value)
+    except InvalidOperation:
         raise ValueError(f"Invalid numeric value in row {i}: {value}") from None
 
 
@@ -60,7 +61,7 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
     This function is responsible for:
     - reading the CSV file,
     - validating required columns and values,
-    - parsing strings into typed values (date, float),
+    - parsing strings into typed values (date, Decimal),
     - and creating typed CsvRow domain objects.
 
     Parameters:
@@ -100,10 +101,10 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
             date=_parse_date(row_number, row[CSV_COL_DATE], config),
             order_number=row[CSV_COL_ORDER_NUMBER].strip(),
             description=row[CSV_COL_DESC],
-            duration_hours=_parse_float(row_number, row[CSV_COL_DURATION]),
-            hourly_rate=_parse_float(row_number, row[CSV_COL_HOURLY_RATE]),
-            material_cost=_parse_float(row_number, row[CSV_COL_MATERIAL]),
-            total_cost=_parse_float(row_number, row[CSV_COL_TOTAL]),
+            duration_hours=_parse_decimal(row_number, row[CSV_COL_DURATION]),
+            hourly_rate=_parse_decimal(row_number, row[CSV_COL_HOURLY_RATE]),
+            material_cost=_parse_decimal(row_number, row[CSV_COL_MATERIAL]),
+            total_cost=_parse_decimal(row_number, row[CSV_COL_TOTAL]),
         )
         result.append(csv_row)
     return result

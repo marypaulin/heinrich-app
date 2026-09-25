@@ -1,14 +1,16 @@
 """Tests for net, VAT and gross calculation and their rendering as placeholders."""
 
+from decimal import Decimal
+
 import pytest
 
 from src.backend.models import LineItem, Totals
 from src.backend.placeholders import PH_SUM_GROSS, PH_SUM_NET, PH_VAT
 
-VAT_RATE = 0.19
+VAT_RATE = Decimal("0.19")
 
 
-def hours_item(quantity: float, unit_price: float) -> LineItem:
+def hours_item(quantity: Decimal, unit_price: Decimal) -> LineItem:
     return LineItem(
         kind="hours",
         order_number="10012345",
@@ -19,11 +21,11 @@ def hours_item(quantity: float, unit_price: float) -> LineItem:
     )
 
 
-def material_item(unit_price: float) -> LineItem:
+def material_item(unit_price: Decimal) -> LineItem:
     return LineItem(
         kind="material",
         order_number="10012345",
-        quantity=1.0,
+        quantity=Decimal(1),
         description="Material zu Auftrag Nr. 10012345",
         unit_price=unit_price,
         total_price=unit_price,
@@ -31,44 +33,55 @@ def material_item(unit_price: float) -> LineItem:
 
 
 def test_totals_of_a_single_hours_item():
-    totals = Totals.calculate_sums_and_vat([hours_item(8.0, 55.0)], VAT_RATE)
+    totals = Totals.calculate_sums_and_vat(
+        [hours_item(Decimal("8.00"), Decimal("55.00"))], VAT_RATE
+    )
 
-    assert totals.sum_net == 440.00
-    assert totals.vat == 83.60
-    assert totals.sum_gross == 523.60
+    assert totals.sum_net == Decimal("440.00")
+    assert totals.vat == Decimal("83.60")
+    assert totals.sum_gross == Decimal("523.60")
 
 
 def test_totals_sum_hours_and_material():
     line_items = [
-        hours_item(8.0, 55.0),
-        hours_item(3.5, 82.5),
-        material_item(212.35),
+        hours_item(Decimal("8.00"), Decimal("55.00")),
+        hours_item(Decimal("3.50"), Decimal("82.50")),
+        material_item(Decimal("212.35")),
     ]
 
     totals = Totals.calculate_sums_and_vat(line_items, VAT_RATE)
 
-    assert totals.sum_net == 941.10
-    assert totals.vat == 178.81
-    assert totals.sum_gross == 1119.91
+    assert totals.sum_net == Decimal("941.10")
+    assert totals.vat == Decimal("178.81")
+    assert totals.sum_gross == Decimal("1119.91")
 
 
 def test_totals_of_no_line_items_are_zero():
     totals = Totals.calculate_sums_and_vat([], VAT_RATE)
 
-    assert totals.sum_net == 0.0
-    assert totals.vat == 0.0
-    assert totals.sum_gross == 0.0
+    assert totals.sum_net == Decimal("0.00")
+    assert totals.vat == Decimal("0.00")
+    assert totals.sum_gross == Decimal("0.00")
 
 
 def test_vat_on_a_half_cent_is_rounded_up():
-    totals = Totals.calculate_sums_and_vat([material_item(13.50)], VAT_RATE)
+    totals = Totals.calculate_sums_and_vat([material_item(Decimal("13.50"))], VAT_RATE)
 
-    assert totals.vat == 2.57
+    assert totals.vat == Decimal("2.57")
 
 
 @pytest.mark.parametrize(
     "unit_price",
-    [13.50, 0.50, 2.50, 4.50, 17.50, 288.75, 1234.50, 4210.00],
+    [
+        Decimal("13.50"),
+        Decimal("0.50"),
+        Decimal("2.50"),
+        Decimal("4.50"),
+        Decimal("17.50"),
+        Decimal("288.75"),
+        Decimal("1234.50"),
+        Decimal("4210.00"),
+    ],
 )
 def test_printed_amounts_add_up(unit_price):
     """Net, VAT and gross are printed side by side; a customer can add them up."""
@@ -84,7 +97,9 @@ def test_printed_amounts_add_up(unit_price):
 
 
 def test_to_mapping_formats_every_placeholder():
-    totals = Totals.calculate_sums_and_vat([hours_item(8.0, 55.0)], VAT_RATE)
+    totals = Totals.calculate_sums_and_vat(
+        [hours_item(Decimal("8.00"), Decimal("55.00"))], VAT_RATE
+    )
 
     assert totals.to_mapping() == {
         PH_SUM_NET: "440,00€",
