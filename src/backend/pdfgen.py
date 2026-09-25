@@ -32,7 +32,7 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
                 pdf_path.unlink()
             except PermissionError:
                 messages.error(
-                    f"PDF konnte nicht überschrieben werden (Datei evtl. geöffnet): {pdf_path.name}"
+                    f"PDF konnte nicht überschrieben werden, Datei evtl. geöffnet ({pdf_path.name})"
                 )
                 logging.exception("PDF locked / cannot delete: %s", pdf_path)
                 return
@@ -54,21 +54,20 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
                 # docx2pdf can fail silently -> verify output exists
                 if not pdf_path.exists():
                     messages.error(
-                        "PDF wurde nicht erzeugt. "
-                        "Bitte prüfen: Word installiert, Datei nicht geöffnet, "
-                        "keine hängende WINWORD.EXE."
+                        "PDF wurde nicht erzeugt, bitte prüfen, ob Word installiert "
+                        "ist, die Datei nicht geöffnet ist und keine WINWORD.EXE hängt"
                     )
                     logging.error(
                         "docx2pdf finished without creating pdf: %s", pdf_path
                     )
                     return
 
-            messages.info(f"PDF erzeugt: {pdf_path.name}")
+            messages.info(f"PDF erzeugt ({pdf_path.name})")
             logging.info("Generated PDF document via Word: %s", pdf_path.name)
             return
 
         except Exception as e:
-            messages.error(f"PDF-Erzeugung fehlgeschlagen: {e}")
+            messages.error(f"PDF-Erzeugung fehlgeschlagen ({e})")
             logging.exception("Word-based PDF conversion failed")
             return
 
@@ -83,9 +82,7 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
     elif system == "Linux":
         soffice = shutil.which("soffice") or shutil.which("libreoffice")
         if not soffice:
-            messages.error(
-                "LibreOffice nicht gefunden. Bitte LibreOffice installieren."
-            )
+            messages.error("LibreOffice nicht gefunden, bitte LibreOffice installieren")
             logging.error("LibreOffice (soffice) not found")
             return
 
@@ -111,22 +108,22 @@ def render_pdf(docx_path: Path, messages: Messages) -> None:
 
             if not pdf_path.exists():
                 messages.error(
-                    "PDF wurde nicht erzeugt. LibreOffice-Konvertierung fehlgeschlagen."
+                    "PDF wurde nicht erzeugt, LibreOffice-Konvertierung fehlgeschlagen"
                 )
                 logging.error("LibreOffice finished without creating pdf: %s", pdf_path)
                 return
 
-            messages.info(f"PDF erzeugt: {pdf_path.name}")
+            messages.info(f"PDF erzeugt ({pdf_path.name})")
             logging.info("Generated PDF document via LibreOffice: %s", pdf_path.name)
             return
 
         except subprocess.CalledProcessError as e:
-            messages.error(f"LibreOffice PDF-Erzeugung fehlgeschlagen: {e}")
+            messages.error(f"LibreOffice-PDF-Erzeugung fehlgeschlagen ({e})")
             logging.exception("LibreOffice PDF conversion failed")
             return
 
     # --------------------
     # Unsupported system
     # --------------------
-    messages.error("PDF-Erzeugung wird auf diesem Betriebssystem nicht unterstützt.")
+    messages.error("PDF-Erzeugung wird auf diesem Betriebssystem nicht unterstützt")
     logging.error("PDF generation not supported on system: %s", system)

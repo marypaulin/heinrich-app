@@ -87,7 +87,7 @@ def _fill_and_save_docx(
     save_docx(doc, target_path)
     display_path = target_path.name
     logging.info(f"Generated {log_label_en}: {display_path}")
-    messages.info(f"{log_label_de} erzeugt: {display_path}")
+    messages.info(f"{log_label_de} erzeugt ({display_path})")
 
 
 def _generate_offer_or_delivery_docx(

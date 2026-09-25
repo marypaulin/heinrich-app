@@ -8,10 +8,10 @@ class Messages:
     items: list[str] = field(default_factory=list)
 
     def info(self, text: str) -> None:
-        self.items.append(text)
+        self.items.append(f"Info: {text}")
 
     def warning(self, text: str) -> None:
         self.items.append(f"Achtung: {text}")
 
     def error(self, text: str) -> None:
-        self.items.append(f"Error: {text}")
+        self.items.append(f"Fehler: {text}")

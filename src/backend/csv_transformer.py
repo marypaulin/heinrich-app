@@ -19,7 +19,7 @@ def _get_hourly_description(csv_row: CsvRow, config: Config, messages: Messages)
         f"using default description '{config.hourly_rate_default}'"
     )
     messages.warning(
-        f"Unbekannter Stundensatz {csv_row.hourly_rate} in Zeile {csv_row.row_number}, "
+        f"Zeile {csv_row.row_number} mit unbekanntem Stundensatz {csv_row.hourly_rate}, "
         f"nutze Standardbeschreibung ‚{config.hourly_rate_default}‘"
     )
     return config.hourly_rate_default
@@ -96,7 +96,7 @@ def csv_rows_to_line_items(
         if not csv_row.order_number:
             logging.info(f"Skipping csv_row {csv_row.row_number} without order number")
             messages.warning(
-                f"Überspringe Zeile {csv_row.row_number}: Keine Auftrags-Nr. angegeben."
+                f"Zeile {csv_row.row_number} übersprungen, keine Auftrags-Nr. angegeben"
             )
             continue
 
@@ -105,8 +105,8 @@ def csv_rows_to_line_items(
                 f"Skipping csv_row {csv_row.row_number} without hours or material"
             )
             messages.warning(
-                f"Überspringe Zeile {csv_row.row_number}: "
-                "Weder Stunden noch Material angegeben."
+                f"Zeile {csv_row.row_number} übersprungen, "
+                "weder Stunden noch Material angegeben"
             )
             continue
 
