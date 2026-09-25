@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .config import Config
 from .models import CsvRow
+from .money import round_cents
 
 CSV_COL_DATE = "Datum"
 CSV_COL_ORDER_NUMBER = "Auftrags-Nr."
@@ -52,6 +53,14 @@ def _parse_decimal(i: int, value: str) -> Decimal:
         return Decimal(value)
     except InvalidOperation:
         raise ValueError(f"Invalid numeric value in row {i}: {value}") from None
+
+
+def _parse_amount(i: int, value: str) -> Decimal:
+    """Parse a money amount; finer than cents is taken for a typo, not rounded."""
+    amount = _parse_decimal(i, value)
+    if round_cents(amount) != amount:
+        raise ValueError(f"Amount with more than two decimals in row {i}: {amount}")
+    return amount
 
 
 def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
@@ -102,8 +111,8 @@ def load_csv_data(csv_path: Path, config: Config) -> list[CsvRow]:
             order_number=row[CSV_COL_ORDER_NUMBER].strip(),
             description=row[CSV_COL_DESC],
             duration_hours=_parse_decimal(row_number, row[CSV_COL_DURATION]),
-            hourly_rate=_parse_decimal(row_number, row[CSV_COL_HOURLY_RATE]),
-            material_cost=_parse_decimal(row_number, row[CSV_COL_MATERIAL]),
+            hourly_rate=_parse_amount(row_number, row[CSV_COL_HOURLY_RATE]),
+            material_cost=_parse_amount(row_number, row[CSV_COL_MATERIAL]),
             total_cost=_parse_decimal(row_number, row[CSV_COL_TOTAL]),
         )
         result.append(csv_row)

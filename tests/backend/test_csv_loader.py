@@ -151,6 +151,14 @@ def test_broken_number_is_rejected(tmp_path):
         load_csv_data(csv_path, CONFIG)
 
 
+@pytest.mark.parametrize("column", ["Stundensatz", "Material"])
+def test_amount_with_more_than_two_decimals_is_rejected(tmp_path, column):
+    csv_path = write_variant(tmp_path, row=1, column=column, value="65.005")
+
+    with pytest.raises(ValueError):
+        load_csv_data(csv_path, CONFIG)
+
+
 def test_broken_date_is_rejected(tmp_path):
     csv_path = write_variant(tmp_path, row=1, column="Datum", value="2025-07-07")
 
