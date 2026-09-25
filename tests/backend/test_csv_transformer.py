@@ -129,6 +129,15 @@ def test_row_without_order_number_is_skipped_with_warning():
     assert len(messages) == 1
 
 
+def test_row_without_hours_and_material_is_skipped_with_warning():
+    line_items, messages = csv_rows_to_line_items(
+        [csv_row(duration_hours=0.0, material_cost=0.0)], CONFIG
+    )
+
+    assert line_items == []
+    assert len(messages) == 1
+
+
 # — Order of items ——————————————————————————————————————————————————————————————
 
 

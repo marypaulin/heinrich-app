@@ -77,6 +77,7 @@ def csv_rows_to_line_items(
 
     Validation and filtering:
     - Rows without an order number are skipped.
+    - Rows with neither hours nor material are skipped.
     - All numeric values are assumed to be already parsed and validated
       in the CSV loader.
 
@@ -95,6 +96,16 @@ def csv_rows_to_line_items(
             logging.info(f"Skipping csv_row {csv_row.row_number} without order number")
             messages.warning(
                 f"Überspringe Zeile {csv_row.row_number}: Keine Auftrags-Nr. angegeben."
+            )
+            continue
+
+        if csv_row.duration_hours == 0 and csv_row.material_cost == 0:
+            logging.info(
+                f"Skipping csv_row {csv_row.row_number} without hours or material"
+            )
+            messages.warning(
+                f"Überspringe Zeile {csv_row.row_number}: "
+                "Weder Stunden noch Material angegeben."
             )
             continue
 
