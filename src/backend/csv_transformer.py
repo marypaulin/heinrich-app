@@ -10,25 +10,24 @@ from .models import CsvRow, LineItem
 from .money import round_cents
 
 
-def _get_hourly_description(
-    hourly_rate: Decimal, config: Config, messages: Messages
-) -> str:
+def _get_hourly_description(csv_row: CsvRow, config: Config, messages: Messages) -> str:
     """Get description based on hourly rate"""
-    if hourly_rate in config.hourly_rate_mapping:
-        return config.hourly_rate_mapping[hourly_rate]
+    if csv_row.hourly_rate in config.hourly_rate_mapping:
+        return config.hourly_rate_mapping[csv_row.hourly_rate]
     logging.warning(
-        f"Unknown hourly rate {hourly_rate}, using default description '{config.hourly_rate_default}'"
+        f"Unknown hourly rate {csv_row.hourly_rate} in row {csv_row.row_number}, "
+        f"using default description '{config.hourly_rate_default}'"
     )
     messages.warning(
-        f"Unbekannter Stundenlohn {hourly_rate}, "
-        f"nutze Default '{config.hourly_rate_default}'"
+        f"Unbekannter Stundensatz {csv_row.hourly_rate} in Zeile {csv_row.row_number}, "
+        f"nutze Standardbeschreibung ‚{config.hourly_rate_default}‘"
     )
     return config.hourly_rate_default
 
 
 def _hours_item(csv_row: CsvRow, config: Config, messages: Messages) -> LineItem:
     logging.info(f"Creating hours item for order number: {csv_row.order_number}")
-    hourly_description = _get_hourly_description(csv_row.hourly_rate, config, messages)
+    hourly_description = _get_hourly_description(csv_row, config, messages)
     return LineItem(
         kind="hours",
         order_number=csv_row.order_number,
