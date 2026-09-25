@@ -95,6 +95,24 @@ def test_material_adds_a_material_item_after_the_hours():
     assert messages == []
 
 
+def test_row_without_hours_becomes_only_a_material_item():
+    line_items, messages = csv_rows_to_line_items(
+        [csv_row(duration_hours=0.0, material_cost=95.0)], CONFIG
+    )
+
+    assert line_items == [
+        LineItem(
+            kind="material",
+            order_number="90010001",
+            quantity=1.0,
+            description="Material zu Auftrag Nr. 90010001",
+            unit_price=95.0,
+            total_price=95.0,
+        )
+    ]
+    assert messages == []
+
+
 # — Skipped rows ————————————————————————————————————————————————————————————————
 
 

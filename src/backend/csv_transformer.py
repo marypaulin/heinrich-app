@@ -61,9 +61,8 @@ def csv_rows_to_line_items(
     into document-ready line items.
 
     Transformation rules:
-    - Each valid CsvRow always produces one "hours" LineItem.
-    - If material_cost is non-zero, an additional "material" LineItem
-      is created.
+    - If duration_hours is non-zero, an "hours" LineItem is created.
+    - If material_cost is non-zero, a "material" LineItem is created after it.
     - LineItems are enriched with calculated totals and derived descriptions.
 
     Data lineage:
@@ -99,7 +98,8 @@ def csv_rows_to_line_items(
             )
             continue
 
-        result.append(_hours_item(csv_row, config, messages))
+        if csv_row.duration_hours != 0:
+            result.append(_hours_item(csv_row, config, messages))
         if csv_row.material_cost != 0:
             result.append(_material_item(csv_row))
 
