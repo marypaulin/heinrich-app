@@ -2,6 +2,8 @@
 
 from decimal import Decimal
 
+from .money import round_cents
+
 
 def format_quantity(value: Decimal) -> str:
     """Format a quantity value with one decimal,
@@ -13,5 +15,12 @@ def format_quantity(value: Decimal) -> str:
 
 def format_price(value: Decimal) -> str:
     """Format a price value with thousands separator and two decimals,
-    German locale (e.g. 1234.5 -> 1.234,50€)."""
-    return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + "€"
+    German locale (e.g. 1234.5 -> 1.234,50€).
+
+    Rejects amounts finer than cents instead of rounding them: every amount is
+    rounded where it is calculated, so one arriving here unrounded is a bug.
+    """
+    cents = round_cents(value)
+    if cents != value:
+        raise ValueError(f"Price not rounded to cents: {value}")
+    return f"{cents:,f}".replace(",", "X").replace(".", ",").replace("X", ".") + "€"

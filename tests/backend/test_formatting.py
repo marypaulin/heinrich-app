@@ -11,6 +11,7 @@ from src.backend.formatting import format_price, format_quantity
     ("value", "expected"),
     [
         (Decimal("0.00"), "0,00€"),
+        (Decimal(95), "95,00€"),
         (Decimal("55.00"), "55,00€"),
         (Decimal("82.50"), "82,50€"),
         (Decimal("123.75"), "123,75€"),
@@ -22,18 +23,9 @@ def test_format_price(value, expected):
     assert format_price(value) == expected
 
 
-@pytest.mark.parametrize(
-    ("net", "expected"),
-    [
-        (Decimal("440.00"), "83,60€"),
-        (Decimal("1234.50"), "234,56€"),
-        (Decimal("288.75"), "54,86€"),
-        (Decimal("4210.00"), "799,90€"),
-    ],
-)
-def test_format_price_rounds_vat_to_two_decimals(net, expected):
-    """VAT of a net sum almost always carries more than two decimals."""
-    assert format_price(net * Decimal("0.19")) == expected
+def test_format_price_rejects_amount_finer_than_cents():
+    with pytest.raises(ValueError):
+        format_price(Decimal("30.125"))
 
 
 @pytest.mark.parametrize(
